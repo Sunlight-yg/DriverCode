@@ -156,6 +156,7 @@
     <ClInclude Include="FileFilter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sfilter\sfilter.c" />
     <ClCompile Include="FileFilter.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

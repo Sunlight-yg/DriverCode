@@ -32,5 +32,8 @@
     <ClCompile Include="FileFilter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sfilter\sfilter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
