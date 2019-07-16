@@ -1,0 +1,86 @@
+;
+; Ctrl2Cap.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=SunlightClass ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=Ctrl2Cap.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+Ctrl2Cap_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+Ctrl2Cap.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%Ctrl2Cap.DeviceDesc%=Ctrl2Cap_Device, Root\Ctrl2Cap ; TODO: edit hw-id
+
+[Ctrl2Cap_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+Ctrl2Cap.sys
+
+;-------------- Service installation
+[Ctrl2Cap_Device.NT.Services]
+AddService = Ctrl2Cap,%SPSVCINST_ASSOCSERVICE%, Ctrl2Cap_Service_Inst
+
+; -------------- Ctrl2Cap driver install sections
+[Ctrl2Cap_Service_Inst]
+DisplayName    = %Ctrl2Cap.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\Ctrl2Cap.sys
+
+;
+;--- Ctrl2Cap_Device Coinstaller installation ------
+;
+
+[Ctrl2Cap_Device.NT.CoInstallers]
+AddReg=Ctrl2Cap_Device_CoInstaller_AddReg
+CopyFiles=Ctrl2Cap_Device_CoInstaller_CopyFiles
+
+[Ctrl2Cap_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[Ctrl2Cap_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[Ctrl2Cap_Device.NT.Wdf]
+KmdfService =  Ctrl2Cap, Ctrl2Cap_wdfsect
+[Ctrl2Cap_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="阳光" ;TODO: Replace with your manufacturer name
+ClassName="Sunlight" ; TODO: edit ClassName
+DiskName = "Ctrl2Cap Installation Disk"
+Ctrl2Cap.DeviceDesc = "我的设备"
+Ctrl2Cap.SVCDESC = "Ctrl2Cap Service"
