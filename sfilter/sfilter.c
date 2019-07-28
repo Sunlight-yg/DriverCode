@@ -54,7 +54,7 @@ Environment:
 //  environment.
 //
 
-#if WINVER == 0x0500
+#if WINVER == 0x0500 
 
 //
 //  These macros are used to test, set and clear flags respectively
