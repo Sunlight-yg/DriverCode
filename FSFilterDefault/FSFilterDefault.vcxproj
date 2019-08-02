@@ -163,7 +163,6 @@
     <ClCompile Include="Auxiliary.c" />
     <ClCompile Include="CallBack.c" />
     <ClCompile Include="FastIo.c" />
-    <ClCompile Include="Globalvar.c" />
     <ClCompile Include="Irp.c" />
     <ClCompile Include="Launch.c" />
   </ItemGroup>

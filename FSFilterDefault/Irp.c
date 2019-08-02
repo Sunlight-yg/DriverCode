@@ -395,7 +395,7 @@ NTSTATUS FSFilterMinoIrpLoadFileSystem(IN PDEVICE_OBJECT pstDeviceObject,
 
 	// Set completion routine.
 	IoSetCompletionRoutine(pstIrp,
-		FSFilterEventComplete,
+		FSFilterLoadFileSystemComplete,
 		&waitEvent,
 		TRUE,
 		TRUE,

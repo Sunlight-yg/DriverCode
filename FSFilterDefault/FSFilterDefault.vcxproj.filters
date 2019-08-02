@@ -54,9 +54,6 @@
     <ClCompile Include="FastIo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Globalvar.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Irp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
