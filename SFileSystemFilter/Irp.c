@@ -52,6 +52,9 @@ NTSTATUS FSFilterIrpCreate(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpSetInformation(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
 {
+
+	PAGED_CODE();
+
 	PIO_STACK_LOCATION pIrpSp = NULL;
 	FILE_DISPOSITION_INFORMATION *pFileInformation = NULL;
 

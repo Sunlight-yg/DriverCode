@@ -108,10 +108,10 @@ NTSTATUS FSFilterCreateComplete(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp, IN PVOI
 
 	if (NT_SUCCESS(pIrp->IoStatus.Status))
 	{
-		if (pFile != NULL && (pIrpSp->Parameters.Create.Options & FILE_DIRECTORY_FILE) != 0)
+		/*if (pFile != NULL && (pIrpSp->Parameters.Create.Options & FILE_DIRECTORY_FILE) != 0)
 		{
 			KdPrint(("一个目录已经打开。"));
-		}
+		}*/
 	}
 
 	return pIrp->IoStatus.Status;
