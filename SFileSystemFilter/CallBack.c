@@ -92,27 +92,13 @@ NTSTATUS FSFilterLoadFileSystemComplete(
 #pragma PAGEDCODE
 NTSTATUS FSFilterCreateComplete(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp, IN PVOID pContext)
 {
-	PIO_STACK_LOCATION pIrpSp;
-	PFILE_OBJECT pFile = NULL;
-
-	if (!IS_MY_FILTER_DEVICE_OBJECT(pDevObj))
-	{
-		return pIrp->IoStatus.Status;
-	}
-
-	pIrpSp = IoGetCurrentIrpStackLocation(pIrp);
-	pFile = pIrpSp->FileObject;
-
+	UNREFERENCED_PARAMETER(pIrp);
 	UNREFERENCED_PARAMETER(pDevObj);
-	UNREFERENCED_PARAMETER(pContext);
 
-	if (NT_SUCCESS(pIrp->IoStatus.Status))
-	{
-		if (pFile != NULL && (pIrpSp->Parameters.Create.Options & FILE_DIRECTORY_FILE) != 0)
-		{
-			KdPrint(("一个目录已经打开。"));
-		}
-	}
+	//ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pDevObj));
+	ASSERT(NULL != pContext);
+	
+	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
 
-	return pIrp->IoStatus.Status;
+	return STATUS_MORE_PROCESSING_REQUIRED;
 }

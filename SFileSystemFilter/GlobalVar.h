@@ -5,5 +5,6 @@
 extern PDRIVER_OBJECT g_pstDriverObject;
 extern PDEVICE_OBJECT g_pstControlDeviceObject;
 extern FAST_MUTEX g_stAttachLock;
+//extern UNICODE_STRING g_usFilePathArray[255];
 
 #endif // !GLOBALVAR_H_

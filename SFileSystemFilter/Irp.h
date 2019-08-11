@@ -1,26 +1,3 @@
-//******************************************************************************
-// License:     MIT
-// Author:      Hoffman
-// GitHub:      https://github.com/JokerRound
-// Create Time: 2019-02-06
-// Description: 
-//      The routines deal with irp. 
-//
-// Modify Log:
-//      2019-02-06    Hoffman
-//      Info: a. Add below routines.
-//              a.1. FSFilterIrpDefault();
-//
-//      2019-02-09    Hoffman
-//      Info: a. Add below routines.
-//              a.1. FSFilterIrpFileSystemControl();
-//
-//      2019-02-11    Hoffman
-//      Info: a. Add below routines.
-//              a.1. FSFilterIrpRead();
-//              a.2. FSFilterIrpWrite();
-//******************************************************************************
-
 #pragma once
 #ifndef IRP_H_
 #define IRP_H_

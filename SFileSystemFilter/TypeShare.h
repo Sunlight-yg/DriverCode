@@ -6,7 +6,7 @@
 typedef struct tagDeviceExtension
 {
 	PDEVICE_OBJECT  pstDeviceObject_;
-	// 此参数接收指向附加到的设备对象的指针。
+	// 此参数接收指向附加到的设备对象的指针(文件系统的卷设备)。
 	PDEVICE_OBJECT  pstNextDeviceObject_;
 	// 磁盘设备对象指针
 	PDEVICE_OBJECT  pstStorageDeviceObject_;
