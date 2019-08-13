@@ -25,16 +25,6 @@ NTSTATUS FSFilterIrpCreate(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 	PIO_STACK_LOCATION pIoStack = NULL;
 	PFILE_OBJECT pFile = NULL;
 	POBJECT_NAME_INFORMATION pObjName = NULL;
-	UNICODE_STRING devName;
-
-	// 手动建立IRP所需
-	PIRP Irp = 0;
-	PDEVICE_OBJECT TargetFs = 0;
-	KEVENT CompleteEvent;
-	PIO_STACK_LOCATION IrpSp = 0;
-	IO_STATUS_BLOCK IoStatusBlock = { 0 };
-	FILE_STANDARD_INFORMATION fsi = { 0 };
-
 
 	PAGED_CODE();
 
@@ -80,77 +70,14 @@ NTSTATUS FSFilterIrpCreate(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 		ASSERT(STATUS_SUCCESS == status);
 	}
 
-	// 以下为打开/创建文件成功后的操作
+	// 以下为Create请求成功后的操作
 	if (NT_SUCCESS(pstIrp->IoStatus.Status))
 	{
-		// 手动建立irp 
-		TargetFs = IoGetRelatedDeviceObject(pFile);
-		Irp = IoAllocateIrp(TargetFs->StackSize, 0);
-		if (!Irp)
+		if ((pIoStack->Parameters.Create.Options >> 24) == FILE_CREATE)
 		{
-			IoStatusBlock.Status = STATUS_INSUFFICIENT_RESOURCES;
-			IoStatusBlock.Information = 0;
-			KdPrint(("IoAllocateIrp: 分配内存失败。")); 
-			return FALSE;
-		}
-
-		KeInitializeEvent(&CompleteEvent, NotificationEvent, 0);
-		Irp->Flags = 0;
-		Irp->AssociatedIrp.SystemBuffer = &fsi;
-		Irp->MdlAddress = 0;
-		Irp->UserBuffer = 0;
-		Irp->UserIosb = &IoStatusBlock;
-		Irp->UserEvent = &CompleteEvent;
-		Irp->Tail.Overlay.Thread = PsGetCurrentThread();
-		Irp->Tail.Overlay.OriginalFileObject = pFile;
-		Irp->RequestorMode = KernelMode;
-
-		IrpSp = IoGetNextIrpStackLocation(Irp);
-		IrpSp->DeviceObject = TargetFs;
-		IrpSp->FileObject = pFile;
-		IrpSp->MajorFunction = IRP_MJ_QUERY_INFORMATION;
-		IrpSp->MinorFunction = 0;
-		IrpSp->Parameters.QueryFile.FileInformationClass = FileStandardInformation;
-		IrpSp->Parameters.QueryFile.Length = sizeof(fsi);
-
-		IoSetCompletionRoutine(Irp, FSFilterCreateComplete, &CompleteEvent, TRUE, TRUE, TRUE);
-		(void)IoCallDriver(TargetFs, Irp);
-		KeWaitForSingleObject(&CompleteEvent, Executive, KernelMode, TRUE, 0);
-
-		IoFreeIrp(Irp);
-		// 判断是否是目录
-		//if (fsi.Directory)
-		//{
-		//	KdPrint(("文件大小为: %d", fsi.EndOfFile.QuadPart));
-		//	// 获取打开文件路径
-		//	IoQueryFileDosDeviceName(pFile, &pObjName);
-		//	// 获取设备路径，如"C:" 
-		//	IoVolumeDeviceToDosName(pFile->DeviceObject, &devName);
-		//	KdPrint(("%wZ", pObjName));
-		//	ExFreePool(pObjName);
-		//	ExFreePool(devName.Buffer);
-		//}
-		if ((INT)fsi.EndOfFile.QuadPart == 0 && !fsi.Directory)
-		{
-			KdPrint(("文件大小为: %d", fsi.EndOfFile.QuadPart));
-			// 获取打开文件路径
-			IoQueryFileDosDeviceName(pFile, &pObjName);
-			// 获取设备路径，如"C:" 
-			IoVolumeDeviceToDosName(pFile->DeviceObject, &devName);
-
-			// 若打开的文件名等于"C:"这种卷路径(则不输出卷路径)
-			if (RtlCompareUnicodeString(&pObjName->Name, &devName, FALSE) == 0)
-			{
-				ExFreePool(pObjName);
-				ExFreePool(devName.Buffer);
-				IoCompleteRequest(pstIrp, IO_NO_INCREMENT);
-				return pstIrp->IoStatus.Status;
-			}
-
-			// 输出打开的文件名
-			KdPrint(("%wZ", pObjName));
-			ExFreePool(pObjName);
-			ExFreePool(devName.Buffer);
+			/*IoQueryFileDosDeviceName(pFile, &pObjName);
+			KdPrint(("文件名: %wZ", pObjName));
+			ExFreePool(pObjName);*/
 		}
 	}
 	
@@ -161,42 +88,44 @@ NTSTATUS FSFilterIrpCreate(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpSetInformation(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
 {
+	PIO_STACK_LOCATION pIrpSp = NULL;
+	PFILE_DISPOSITION_INFORMATION pFileInformation = NULL;
+	PFILE_OBJECT pFile = NULL;
+	POBJECT_NAME_INFORMATION pObjName = NULL;
 
 	PAGED_CODE();
-
-	PIO_STACK_LOCATION pIrpSp = NULL;
-	FILE_DISPOSITION_INFORMATION *pFileInformation = NULL;
 
 	ASSERT(!IS_MY_CONTROL_DEVICE_OBJECT(pDevObj));
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pDevObj));
 
 	pIrpSp = IoGetCurrentIrpStackLocation(pIrp);
-	 
+	pFile = pIrpSp->FileObject;
+
 	switch (pIrpSp->Parameters.SetFile.FileInformationClass)
 	{
 		case FileDispositionInformation:
 		{
 			if (NULL == pIrp->AssociatedIrp.SystemBuffer)
 			{
-				//KdPrint(("SystemBuffer is NULL。"));
+				KdPrint(("SystemBuffer is NULL。"));
 			}
 			else 
 			{
-				pFileInformation = (FILE_DISPOSITION_INFORMATION*)pIrp->AssociatedIrp.SystemBuffer;
+				pFileInformation = (PFILE_DISPOSITION_INFORMATION)pIrp->AssociatedIrp.SystemBuffer;
 				if (pFileInformation->DeleteFile)
 				{
-					//KdPrint(("删除文件操作。"));
-					/*pIrp->IoStatus.Status = STATUS_ACCESS_DENIED;
-					pIrp->IoStatus.Information = 0;
-					IoCompleteRequest(pIrp, IO_NO_INCREMENT);*/
-					return pIrp->IoStatus.Status;
+					/*IoQueryFileDosDeviceName(pFile, &pObjName);
+					KdPrint(("删除文件: %wZ", pObjName));
+					ExFreePool(pObjName);*/
 				}
 			}
 			break;
 		}
 		case FileRenameInformation:
 		{
-			//KdPrint(("文件改名操作。"));
+			/*IoQueryFileDosDeviceName(pFile, &pObjName);
+			KdPrint(("文件改名: %wZ", pObjName));
+			ExFreePool(pObjName);*/
 			break;
 		}
 	}
@@ -220,7 +149,10 @@ NTSTATUS FSFilterPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
-	PAGED_CODE();
+	PFILE_OBJECT pFile = NULL;
+	POBJECT_NAME_INFORMATION pObjName = NULL;
+
+	//PAGED_CODE();
 
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
@@ -242,6 +174,7 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 	PIO_STACK_LOCATION pstStackLocation = IoGetCurrentIrpStackLocation(pstIrp);
 	LARGE_INTEGER stOffset = { 0 };
 	ULONG ulLength = 0;
+	pFile = pstStackLocation->FileObject;
 
 	// 获取偏移和长度
 	stOffset.QuadPart = pstStackLocation->Parameters.Read.ByteOffset.QuadPart;
@@ -282,11 +215,13 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 			pBuffer = pstIrp->UserBuffer;
 		}
 
-		if (NULL != pBuffer)
+		/*if (NULL != pBuffer)
 		{
 			ulLength =(ULONG)pstIrp->IoStatus.Information;
-			//KdPrint(("Read irp: the size is %ul\r\n", ulLength));
-		}
+			IoQueryFileDosDeviceName(pFile, &pObjName);
+			KdPrint(("读文件: %wZ", pObjName));
+			ExFreePool(pObjName);
+		}*/
 	}
 
 	IoCompleteRequest(pstIrp, IO_NO_INCREMENT);
@@ -296,6 +231,9 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpWrite(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
+	PFILE_OBJECT pFile = NULL;
+	POBJECT_NAME_INFORMATION pObjName = NULL;
+
 	PAGED_CODE();
 
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
@@ -317,6 +255,7 @@ NTSTATUS FSFilterIrpWrite(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 	PIO_STACK_LOCATION pstStackLocation = IoGetCurrentIrpStackLocation(pstIrp);
 	//LARGE_INTEGER stOffset = { 0 };
 	ULONG ulLength = 0;
+	pFile = pstStackLocation->FileObject;
 
 	ulLength = pstStackLocation->Parameters.Write.Length;
 	PVOID pBuffer = NULL;
@@ -330,8 +269,9 @@ NTSTATUS FSFilterIrpWrite(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 	}
 	/*if (NULL != pBuffer)
 	{
-		KdPrint(("Wirte irp: The request size is %u\r\n",
-			pstStackLocation->Parameters.Write.Length));
+		IoQueryFileDosDeviceName(pFile, &pObjName);
+		KdPrint(("写文件: %wZ", pObjName));
+		ExFreePool(pObjName);
 	}*/
 
 	IoSkipCurrentIrpStackLocation(pstIrp);

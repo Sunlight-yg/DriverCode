@@ -120,8 +120,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
-    <ClCompile Include="main2.c" />
+    <ClCompile Include="FileSystemFIlter.cpp" />
+    <ClCompile Include="OpenDeviceByName.c" />
+    <ClCompile Include="OpenDeviceByInterface.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileSystemFilter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

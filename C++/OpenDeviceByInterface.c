@@ -20,7 +20,7 @@ LPTSTR GetDevicePath()
 
 	SP_DEVICE_INTERFACE_DATA ifData = { 0 };
 	ifData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-	// 枚举设备信息集
+	// 枚举设备信息集中包含的设备接口
 	if (!SetupDiEnumDeviceInterfaces(hInfo, NULL, &DEVICEINTERFACE, 0, &ifData))
 	{
 		printf("Enum device interface failed!%d\n", GetLastError());
@@ -45,37 +45,37 @@ LPTSTR GetDevicePath()
 	return pDetailData->DevicePath;
 }
 
-int main()
-{
-	LPTSTR DevicePath = GetDevicePath();
-
-	if (DevicePath != NULL)
-	{
-		printf("%s\n", DevicePath);
-		HANDLE hDevice = CreateFile(DevicePath,
-			GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
-			FILE_SHARE_WRITE | FILE_SHARE_READ,
-			NULL,
-			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL);
-		if (hDevice == INVALID_HANDLE_VALUE)
-		{
-			printf("File open failed!%d\n", GetLastError());
-			return -1;
-		}
-
-		DWORD dwRet;
-		char n = getchar();
-		char buffer[4] = { 0 };
-
-		DeviceIoControl(hDevice, IOCTL_TEST, &n, sizeof(n), buffer, sizeof(buffer), &dwRet, NULL);
-		printf("%s", buffer);
-
-		CloseHandle(hDevice);
-	}
-	else
-		printf("Get device path failed!\n");
-
-	return 0;
-}
+//int main()
+//{
+//	LPTSTR DevicePath = GetDevicePath();
+//
+//	if (DevicePath != NULL)
+//	{
+//		printf("%s\n", DevicePath);
+//		HANDLE hDevice = CreateFile(DevicePath,
+//									GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
+//									FILE_SHARE_WRITE | FILE_SHARE_READ,
+//									NULL,
+//									OPEN_EXISTING,
+//									FILE_ATTRIBUTE_NORMAL,
+//									NULL);
+//		if (hDevice == INVALID_HANDLE_VALUE)
+//		{
+//			printf("File open failed!%d\n", GetLastError());
+//			return -1;
+//		}
+//
+//		DWORD dwRet;
+//		char n = getchar();
+//		char buffer[4] = { 0 };
+//
+//		DeviceIoControl(hDevice, IOCTL_TEST, &n, sizeof(n), buffer, sizeof(buffer), &dwRet, NULL);
+//		printf("%s", buffer);
+//
+//		CloseHandle(hDevice);
+//	}
+//	else
+//		printf("Get device path failed!\n");
+//
+//	return 0;
+//}

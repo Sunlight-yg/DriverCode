@@ -15,11 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c">
+    <ClCompile Include="FileSystemFIlter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="main2.c">
+    <ClCompile Include="OpenDeviceByName.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="OpenDeviceByInterface.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileSystemFilter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
