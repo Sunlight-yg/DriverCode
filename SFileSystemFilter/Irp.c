@@ -1,10 +1,10 @@
 #include "Launch.h"
 
 #pragma PAGEDCODE
-NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp)
+NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
 	PAGED_CODE();
+
 	ASSERT(!IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject));
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
@@ -12,7 +12,6 @@ NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject,
 		(PDEVICE_EXTENSION)pstDeviceObject->DeviceExtension;
 
 	IoSkipCurrentIrpStackLocation(pstIrp);
-
 	return IoCallDriver(pstDeviceExtension->pstNextDeviceObject_, pstIrp);
 }
 

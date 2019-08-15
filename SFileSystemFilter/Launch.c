@@ -1,18 +1,14 @@
 #include "Launch.h"
 
 #pragma INITCODE
-NTSTATUS
-DriverEntry(
-	IN PDRIVER_OBJECT pstDriverObject,
-	IN PUNICODE_STRING pstRegister
-)
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pstDriverObject, IN PUNICODE_STRING pstRegister)
 {
-	PAGED_CODE();
-
 	PFAST_IO_DISPATCH pstFastIoDispatch = NULL;
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 
+	PAGED_CODE();
 	UNREFERENCED_PARAMETER(pstRegister);
+
 	KdPrint(("Enter DriverEntry\n"));
 
 	// 初始化快速互斥量。附加卷的时候使用
@@ -27,22 +23,19 @@ DriverEntry(
 		pstDriverObject->MajorFunction[cntl] = FSFilterIrpDefault;
 	}
 
-	pstDriverObject->MajorFunction[IRP_MJ_SET_INFORMATION] = FSFilterIrpSetInformation;
 	pstDriverObject->MajorFunction[IRP_MJ_CREATE] = FSFilterIrpCreate;
 	pstDriverObject->MajorFunction[IRP_MJ_CREATE_NAMED_PIPE] = FSFilterIrpCreate;
 	pstDriverObject->MajorFunction[IRP_MJ_CREATE_MAILSLOT] = FSFilterIrpCreate;
-	pstDriverObject->MajorFunction[IRP_MJ_POWER] = FSFilterPower;
-	pstDriverObject->MajorFunction[IRP_MJ_FILE_SYSTEM_CONTROL] =
-		FSFilterIrpFileSystemControl;
 	pstDriverObject->MajorFunction[IRP_MJ_READ] = FSFilterIrpRead;
-	pstDriverObject->MajorFunction[IRP_MJ_WRITE] = FSFilterIrpWrite;
+	pstDriverObject->MajorFunction[IRP_MJ_WRITE] = FSFilterIrpWrite; 
+	pstDriverObject->MajorFunction[IRP_MJ_SET_INFORMATION] = FSFilterIrpSetInformation;
+	pstDriverObject->MajorFunction[IRP_MJ_FILE_SYSTEM_CONTROL] = FSFilterIrpFileSystemControl;
+	pstDriverObject->MajorFunction[IRP_MJ_POWER] = FSFilterPower;
 
 	// 分配快速I/O例程内存
-	pstFastIoDispatch = (PFAST_IO_DISPATCH)
-		ExAllocatePoolWithTag(
-		PagedPool,
-		sizeof(FAST_IO_DISPATCH),
-		FAST_IO_DISPATCH_TAG);
+	pstFastIoDispatch = (PFAST_IO_DISPATCH) ExAllocatePoolWithTag(PagedPool,
+																  sizeof(FAST_IO_DISPATCH),
+																  FAST_IO_DISPATCH_TAG);
 	if (NULL == pstFastIoDispatch)
 	{
 		KdPrint(("快速IO分配内存失败。"));
@@ -98,9 +91,7 @@ DriverEntry(
 // 获取文件系统驱动程序的设备对象列表，创建过滤器并附加到设备(如果它是我的目标设备)，
 // 然后保存设备名称释放资源，直到所有设备都被操作。
 #pragma PAGEDCODE
-NTSTATUS FSFilterAttachToMountedVolumeDevice(
-	IN PDEVICE_OBJECT pstFSControlDeviceObject
-)
+NTSTATUS FSFilterAttachToMountedVolumeDevice(IN PDEVICE_OBJECT pstFSControlDeviceObject)
 {
 	PAGED_CODE();
 
@@ -115,11 +106,10 @@ NTSTATUS FSFilterAttachToMountedVolumeDevice(
 	{
 		// 获取设备对象数量
 		ntStatus =
-			IoEnumerateDeviceObjectList(
-				pstFSControlDeviceObject->DriverObject,
-				NULL,
-				0,
-				&ulDeviceObjectNumber);
+			IoEnumerateDeviceObjectList(pstFSControlDeviceObject->DriverObject,
+										NULL,
+										0,
+										&ulDeviceObjectNumber);
 		if (!NT_SUCCESS(ntStatus) && STATUS_BUFFER_TOO_SMALL != ntStatus)
 		{
 			KdPrint(("FileSystemFilter!FSFilterAttachToMountedVolumeDevice: "
@@ -130,11 +120,9 @@ NTSTATUS FSFilterAttachToMountedVolumeDevice(
 		// 计算设备对象集合的大小
 		ulDeviceObjectListSize = sizeof(PDEVICE_OBJECT) * ulDeviceObjectNumber;
 
-		apstDeviceObjectList =
-			(PDEVICE_OBJECT *)
-			ExAllocatePoolWithTag(PagedPool,
-								  ulDeviceObjectListSize,
-								  DEVICE_OBJECT_LIST_TAG);
+		apstDeviceObjectList =(PDEVICE_OBJECT *)ExAllocatePoolWithTag(PagedPool,
+																	  ulDeviceObjectListSize,
+																	  DEVICE_OBJECT_LIST_TAG);
 		if (NULL == apstDeviceObjectList)
 		{
 			KdPrint(("ExAllocatePoolWithTag failed.\r\n"));
@@ -142,11 +130,10 @@ NTSTATUS FSFilterAttachToMountedVolumeDevice(
 		}
 
 		// 获取设备对象集合(数组)
-		ntStatus = IoEnumerateDeviceObjectList(
-			pstFSControlDeviceObject->DriverObject,
-			apstDeviceObjectList,
-			ulDeviceObjectListSize,
-			&ulDeviceObjectNumber);
+		ntStatus = IoEnumerateDeviceObjectList(pstFSControlDeviceObject->DriverObject,
+											   apstDeviceObjectList,
+											   ulDeviceObjectListSize,
+											   &ulDeviceObjectNumber);
 		if (!NT_SUCCESS(ntStatus))
 		{
 			KdPrint(("IoEnumerateDeviceObjectList failed.\r\n"));
@@ -302,7 +289,7 @@ NTSTATUS FSFilterAttachToFileSystemControlDevice(
 	{
 		// 获取注册的文件系统驱动名
 		ntStatus = FSFilterGetObjectName(pstDeviceObject->DriverObject,
-									   &pustrDriverObjectName);
+									     &pustrDriverObjectName);
 		if (!NT_SUCCESS(ntStatus))
 		{
 			break;
@@ -451,13 +438,14 @@ NTSTATUS FSFilterDetachFromFileSystemControlDevice(IN PDEVICE_OBJECT pstDeviceOb
 #pragma PAGEDCODE
 VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject)
 {
-	PAGED_CODE();
 
 	PDEVICE_EXTENSION pstDeviceExtension = NULL;
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	ULONG ulDeviceObjectNumber = 0;
 	PDEVICE_OBJECT *apstDeviceObejctList = NULL;
 	ULONG ulDeiveObjectListSize = 0;
+
+	PAGED_CODE();
 
 	KdPrint(("Enter DriverUnload\n"));
 
@@ -544,6 +532,12 @@ VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject)
 		ExFreePoolWithTag(apstDeviceObejctList, DEVICE_OBJECT_LIST_TAG);
 	}
 
+	ntStatus = IoDeleteSymbolicLink(&g_usControlDeviceSymbolicLinkName);
+	if (!NT_SUCCESS(ntStatus))
+	{
+		KdPrint(("IoDeleteSymbolicLink: 符号连接删除失败。%X", ntStatus));
+	}
+
 	// 释放快速I/O分配的内存
 	PFAST_IO_DISPATCH pstFastIoDispatch = pstDriverObject->FastIoDispatch;
 	pstDriverObject->FastIoDispatch = NULL;
@@ -562,7 +556,7 @@ NTSTATUS FSFilterCreateDevice(IN PDRIVER_OBJECT pstDriverObject)
 	NTSTATUS ntStatus;
 	UNICODE_STRING ustrDeviceName;
 	
-	// "\\FileSystem\\Filters\\SFilter"
+	// "SunlightFsFilter"
 	RtlInitUnicodeString(&ustrDeviceName, CONTROL_DEVICE_NAME);
 
 	ntStatus = IoCreateDevice(pstDriverObject,
@@ -586,8 +580,8 @@ NTSTATUS FSFilterCreateDevice(IN PDRIVER_OBJECT pstDriverObject)
 								  &g_pstControlDeviceObject);
 		if (!NT_SUCCESS(ntStatus))
 		{
-			KdPrint(("FileSystemFilter!FsFilterAddDevice: "
-				"Create \"%wZ\" deivce failed.\r\n",
+			KdPrint(("FSFilterCreateDevice: "
+				"创建\"%wZ\"设备失败。",
 				&ustrDeviceName));
 			return ntStatus;
 		}
@@ -595,10 +589,16 @@ NTSTATUS FSFilterCreateDevice(IN PDRIVER_OBJECT pstDriverObject)
 	// ! if 'Path not fond' END
 	else if (!NT_SUCCESS(ntStatus))
 	{
-		KdPrint(("FileSystemFilter!FsFilterAddDevice: "
-			"Create \"%wZ\" deivce failed.\r\n",
+		KdPrint(("FSFilterCreateDevice: "
+			"创建\"%wZ\"设备失败。",
 			&ustrDeviceName));
 		return ntStatus;
+	}
+
+	ntStatus = IoCreateSymbolicLink(&g_usControlDeviceSymbolicLinkName, &ustrDeviceName);
+	if (!NT_SUCCESS(ntStatus))
+	{
+		KdPrint(("IoCreateSymbolicLink: 符号连接创建失败%X。", ntStatus));
 	}
 
 	return STATUS_SUCCESS;

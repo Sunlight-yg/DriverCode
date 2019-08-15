@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B00A0BE2-E9E4-4619-9773-6251B01BF30A}</ProjectGuid>
     <RootNamespace>C</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -123,9 +123,6 @@
     <ClCompile Include="FileSystemFIlter.cpp" />
     <ClCompile Include="OpenDeviceByName.c" />
     <ClCompile Include="OpenDeviceByInterface.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="FileSystemFilter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

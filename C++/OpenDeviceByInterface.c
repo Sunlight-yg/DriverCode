@@ -9,41 +9,48 @@
 DEFINE_GUID(DEVICEINTERFACE,
 	0xaf9d7207, 0xeac, 0x4d2c, 0x90, 0xe4, 0x7d, 0xcf, 0x84, 0x79, 0xec, 0xa9);
 
-LPTSTR GetDevicePath()
+// 获取设备路径
+LPTSTR GetDevicePathByInterface()
 {
+	HDEVINFO hInfo = NULL;
+	SP_DEVICE_INTERFACE_DATA ifData = { 0 };
+	DWORD dwSize = 0;
+	PSP_DEVICE_INTERFACE_DETAIL_DATA pDetailData = NULL;
+
 	// 根据设备接口返回设备信息集句柄
-	HDEVINFO hInfo = SetupDiGetClassDevs(&DEVICEINTERFACE, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
+	hInfo = SetupDiGetClassDevs(&DEVICEINTERFACE,
+		NULL,
+		NULL,
+		DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
 	if (hInfo == NULL)
 	{
 		return NULL;
 	}
 
-	SP_DEVICE_INTERFACE_DATA ifData = { 0 };
 	ifData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 	// 枚举设备信息集中包含的设备接口
 	if (!SetupDiEnumDeviceInterfaces(hInfo, NULL, &DEVICEINTERFACE, 0, &ifData))
 	{
-		printf("Enum device interface failed!%d\n", GetLastError());
+		printf("SetupDiEnumDeviceInterfaces: 枚举失败, %d。", GetLastError());
 		return NULL;
 	}
 
-
-	DWORD dwSize;
 	// 返回保存详细信息结构所需的大小
 	SetupDiGetDeviceInterfaceDetail(hInfo, &ifData, NULL, 0, &dwSize, NULL);
 
-	PSP_DEVICE_INTERFACE_DETAIL_DATA pDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(dwSize);
+	pDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(dwSize);
 	pDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
 	// 获取设备详细信息
 	if (!SetupDiGetDeviceInterfaceDetail(hInfo, &ifData, pDetailData, dwSize, NULL, NULL))
 	{
-		printf("Get detail data failed!%d\n", GetLastError());
+		printf("SetupDiGetDeviceInterfaceDetail: 获取设备详细信息失败, %d。", GetLastError());
 		return NULL;
 	}
 
 	return pDetailData->DevicePath;
 }
+
 
 //int main()
 //{
