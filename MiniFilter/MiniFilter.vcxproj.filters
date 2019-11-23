@@ -19,49 +19,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Auxiliary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CallBack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FastIo.h">
+    <Inf Include="MiniFilter.inf">
+      <Filter>Driver Files</Filter>
+    </Inf>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GlobalVar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniFilter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Auxiliary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MacroShare.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GlobalVar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Irp.h">
+    <ClInclude Include="MiniFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Launch.h">
+    <ClInclude Include="Auxiliary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MacroShare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TypeShare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Auxiliary.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CallBack.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FastIo.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Irp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Launch.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GlobalVar.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

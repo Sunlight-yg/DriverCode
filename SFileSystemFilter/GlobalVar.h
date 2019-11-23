@@ -2,13 +2,12 @@
 #ifndef GLOBALVAR_H_
 #define GLOBALVAR_H_
 
-#define IOCTL_ENCRY CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 0X800, METHOD_IN_DIRECT, FILE_WRITE_ACCESS)
-#define IOCTL_READ CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 0X801, METHOD_OUT_DIRECT, FILE_READ_ACCESS)
-#define IOCTL_WRITE CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 0X802, METHOD_IN_DIRECT, FILE_WRITE_ACCESS)
+extern PDRIVER_OBJECT		g_pstDriverObject;
 
-extern PDRIVER_OBJECT g_pstDriverObject;
-extern PDEVICE_OBJECT g_pstControlDeviceObject;
-extern FAST_MUTEX g_stAttachLock;
-extern UNICODE_STRING g_usControlDeviceSymbolicLinkName;
+extern PDEVICE_OBJECT		g_pstControlDeviceObject;
+
+extern FAST_MUTEX			g_stAttachLock;
+
+extern UNICODE_STRING		g_usControlDeviceSymbolicLinkName;
 
 #endif // !GLOBALVAR_H_

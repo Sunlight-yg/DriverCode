@@ -4,18 +4,7 @@
 VOID FSFilterFsChangeNotify(IN PDEVICE_OBJECT pstDeviceObject,
 							IN BOOLEAN bFSActive);
 
-NTSTATUS FSFilterMountDeviceComplete(IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp, IN PVOID pContext);
-
-NTSTATUS FSFilterReadComplete(IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext);
-
-NTSTATUS FSFilterLoadFileSystemComplete(IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext);
-
-NTSTATUS FSFilterCreateComplete(
+NTSTATUS FSFilterEventComplete(
 	IN PDEVICE_OBJECT pDevObj,
 	IN PIRP pIrp,
 	IN PVOID pContext

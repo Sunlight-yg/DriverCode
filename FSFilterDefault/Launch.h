@@ -12,7 +12,7 @@
 #include "CallBack.h"
 #include "Auxiliary.h"
 
-DRIVER_INITIALIZE DriverEntry;
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath);
 
 VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject);
 

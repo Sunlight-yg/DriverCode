@@ -4,7 +4,7 @@
 NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject,
 	IN PIRP pstIrp)
 {
-	PAGED_CODE();
+
 	ASSERT(!IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject));
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
@@ -17,9 +17,11 @@ NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject,
 }
 
 #pragma PAGEDCODE
-NTSTATUS FSFilterPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
+NTSTATUS FSFilterIrpPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
-	PAGED_CODE();
+
+	ASSERT(!IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject));
+	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
 	PDEVICE_EXTENSION pstDeviceExtension =
 		(PDEVICE_EXTENSION)pstDeviceObject->DeviceExtension;
@@ -31,7 +33,6 @@ NTSTATUS FSFilterPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
-	PAGED_CODE();
 
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
@@ -63,7 +64,7 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	IoSetCompletionRoutine(pstIrp,
-						   FSFilterReadComplete,
+						   FSFilterEventComplete,
 						   &waitEvent,
 						   TRUE,
 						   TRUE,
@@ -107,8 +108,7 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpWrite(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
-	PAGED_CODE();
-
+	
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
 	{
 		pstIrp->IoStatus.Status = STATUS_INVALID_DEVICE_REQUEST;
@@ -155,7 +155,7 @@ NTSTATUS FSFilterAttachMountedVolume(
 	IN PDEVICE_OBJECT pstDeviceObject, 
 	IN PIRP pstIrp)
 {
-	PAGED_CODE();
+	
 	UNREFERENCED_PARAMETER(pstDeviceObject);
 
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstFilterDeviceObject));
@@ -235,7 +235,7 @@ NTSTATUS FSFilterAttachMountedVolume(
 NTSTATUS FSFilterIrpFileSystemControl(IN PDEVICE_OBJECT pstDeviceObject,
 	IN PIRP pstIrp)
 {
-	PAGED_CODE();
+	
 	ASSERT(!IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject));
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
@@ -287,7 +287,7 @@ NTSTATUS FSFilterIrpFileSystemControl(IN PDEVICE_OBJECT pstDeviceObject,
 NTSTATUS FSFilterMinorIrpMountVolumn(IN PDEVICE_OBJECT pstDeviceObject, 
 									 IN PIRP pstIrp)
 {
-	PAGED_CODE();
+	
 	
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 	ASSERT(IS_TARGET_DEVICE_TYPE(pstDeviceObject->DeviceType));
@@ -350,7 +350,7 @@ NTSTATUS FSFilterMinorIrpMountVolumn(IN PDEVICE_OBJECT pstDeviceObject,
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	IoSetCompletionRoutine(pstIrp,
-						   FSFilterMountDeviceComplete,
+						   FSFilterEventComplete,
 						   &waitEvent,
 						   TRUE,
 						   TRUE,
@@ -380,7 +380,7 @@ NTSTATUS FSFilterMinorIrpMountVolumn(IN PDEVICE_OBJECT pstDeviceObject,
 NTSTATUS FSFilterMinoIrpLoadFileSystem(IN PDEVICE_OBJECT pstDeviceObject,
 	IN PIRP pstIrp)
 {
-	PAGED_CODE();
+	
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
 	NTSTATUS ntStatus = STATUS_SUCCESS;
@@ -395,11 +395,11 @@ NTSTATUS FSFilterMinoIrpLoadFileSystem(IN PDEVICE_OBJECT pstDeviceObject,
 
 	// Set completion routine.
 	IoSetCompletionRoutine(pstIrp,
-		FSFilterLoadFileSystemComplete,
-		&waitEvent,
-		TRUE,
-		TRUE,
-		TRUE);
+						   FSFilterEventComplete,
+						   &waitEvent,
+						   TRUE,
+						   TRUE,
+						   TRUE);
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	ntStatus = IoCallDriver(pstDeviceExtension->pstNextDeviceObject_, pstIrp);

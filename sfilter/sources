@@ -1,9 +1,0 @@
-TARGETNAME=sfilter
-TARGETPATH=obj
-TARGETTYPE=DRIVER
-DRIVERTYPE=FS
-
-
-SOURCES=sfilter.c   \
-        sfilter.rc
-

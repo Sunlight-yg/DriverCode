@@ -22,9 +22,11 @@ NTSTATUS FSFilterAttachToFileSystemControlDevice(
 	IN PDEVICE_OBJECT pstDeviceObject,
 	IN PUNICODE_STRING pustrDeviceObjectName
 );
+
 NTSTATUS FSFilterDetachFromFileSystemControlDevice(
 	IN PDEVICE_OBJECT pstDeviceObject
 );
+
 NTSTATUS FSFilterAttachToMountedVolumeDevice(
 	IN PDEVICE_OBJECT pstFSControlDeviceObject
 );

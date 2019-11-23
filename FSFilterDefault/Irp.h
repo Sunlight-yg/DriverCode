@@ -3,7 +3,7 @@
 #define IRP_H_
 
 _Dispatch_type_(IRP_MJ_POWER)
-NTSTATUS FSFilterPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp);
+NTSTATUS FSFilterIrpPower(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp);
 
 _Dispatch_type_(IRP_MJ_READ)
 NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp);

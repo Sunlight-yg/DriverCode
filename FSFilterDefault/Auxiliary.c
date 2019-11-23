@@ -47,7 +47,6 @@ NTSTATUS FSFilterGetObjectName(IN PVOID pObject,
 #pragma PAGEDCODE
 BOOLEAN FSFilterIsAttachedDevice(IN PDEVICE_OBJECT pstDeviceObject)
 {
-	PAGED_CODE();
 
 	PDEVICE_OBJECT pstCurrentDeviceObject =
 		IoGetAttachedDeviceReference(pstDeviceObject);

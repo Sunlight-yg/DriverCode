@@ -7,7 +7,7 @@ DriverEntry(
 	IN PUNICODE_STRING pstRegister
 )
 {
-	PAGED_CODE();
+	
 
 	PFAST_IO_DISPATCH pstFastIoDispatch = NULL;
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
@@ -27,7 +27,7 @@ DriverEntry(
 		pstDriverObject->MajorFunction[cntl] = FSFilterIrpDefault;
 	}
 
-	pstDriverObject->MajorFunction[IRP_MJ_POWER] = FSFilterPower;
+	pstDriverObject->MajorFunction[IRP_MJ_POWER] = FSFilterIrpPower;
 	pstDriverObject->MajorFunction[IRP_MJ_FILE_SYSTEM_CONTROL] =
 		FSFilterIrpFileSystemControl;
 	pstDriverObject->MajorFunction[IRP_MJ_READ] = FSFilterIrpRead;
@@ -98,7 +98,7 @@ NTSTATUS FSFilterAttachToMountedVolumeDevice(
 	IN PDEVICE_OBJECT pstFSControlDeviceObject
 )
 {
-	PAGED_CODE();
+	
 
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	ULONG ulDeviceObjectNumber = 0;
@@ -281,7 +281,7 @@ NTSTATUS FSFilterAttachToFileSystemControlDevice(
 	IN PUNICODE_STRING pustrDeviceObjectName
 )
 {
-	PAGED_CODE();
+	
 
 	PDEVICE_EXTENSION pstDeviceExtension = NULL;
 	PDEVICE_OBJECT pstFilterDeviceObject = NULL;
@@ -416,7 +416,7 @@ NTSTATUS FSFilterDetachFromFileSystemControlDevice(IN PDEVICE_OBJECT pstDeviceOb
 		return STATUS_INVALID_PARAMETER;
 	}
 
-	PAGED_CODE();
+	
 
 	PDEVICE_OBJECT pstAttachedDeviceObject = NULL;
 	PDEVICE_EXTENSION pstDeviceExtension = NULL;
@@ -447,7 +447,7 @@ NTSTATUS FSFilterDetachFromFileSystemControlDevice(IN PDEVICE_OBJECT pstDeviceOb
 #pragma PAGEDCODE
 VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject)
 {
-	PAGED_CODE();
+	
 
 	PDEVICE_EXTENSION pstDeviceExtension = NULL;
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
@@ -553,7 +553,7 @@ VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject)
 #pragma PAGEDCODE
 NTSTATUS FSFilterCreateDevice(IN PDRIVER_OBJECT pstDriverObject)
 {
-	PAGED_CODE();
+	
 
 	NTSTATUS ntStatus;
 	UNICODE_STRING ustrDeviceName;

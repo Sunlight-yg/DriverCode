@@ -3,16 +3,19 @@
 #pragma INITCODE
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pstDriverObject, IN PUNICODE_STRING pstRegister)
 {
-	PFAST_IO_DISPATCH pstFastIoDispatch = NULL;
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	PFAST_IO_DISPATCH	pstFastIoDispatch = NULL;
+
+	NTSTATUS			ntStatus = STATUS_SUCCESS;
 
 	PAGED_CODE();
+
 	UNREFERENCED_PARAMETER(pstRegister);
 
 	KdPrint(("Enter DriverEntry\n"));
 
 	// 初始化快速互斥量。附加卷的时候使用
 	ExInitializeFastMutex(&g_stAttachLock);
+
 	// 初始化全局驱动对象
 	g_pstDriverObject = pstDriverObject;
 
@@ -39,10 +42,11 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pstDriverObject, IN PUNICODE_STRING pstRe
 	if (NULL == pstFastIoDispatch)
 	{
 		KdPrint(("快速IO分配内存失败。"));
-		return STATUS_UNSUCCESSFUL;
+		return STATUS_SUCCESS;
 	}
 
 	RtlZeroMemory(pstFastIoDispatch, sizeof(FAST_IO_DISPATCH));
+
 	pstFastIoDispatch->SizeOfFastIoDispatch = sizeof(FAST_IO_DISPATCH);
 
 	pstFastIoDispatch->FastIoCheckIfPossible = FSFilterFastIoCheckIfPossible;
@@ -95,7 +99,7 @@ NTSTATUS FSFilterAttachToMountedVolumeDevice(IN PDEVICE_OBJECT pstFSControlDevic
 {
 	PAGED_CODE();
 
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 	ULONG ulDeviceObjectNumber = 0;
 	PDEVICE_OBJECT *apstDeviceObjectList = NULL;
 	ULONG ulDeviceObjectListSize = 0;
@@ -278,7 +282,7 @@ NTSTATUS FSFilterAttachToFileSystemControlDevice(
 	PDEVICE_OBJECT pstFilterDeviceObject = NULL;
 	PUNICODE_STRING pustrDriverObjectName = NULL;
 	UNICODE_STRING ustrFileSystemRecName;
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 
 	if (!IS_TARGET_DEVICE_TYPE(pstDeviceObject->DeviceType))
 	{
@@ -440,7 +444,7 @@ VOID FSFilterUnload(IN PDRIVER_OBJECT pstDriverObject)
 {
 
 	PDEVICE_EXTENSION pstDeviceExtension = NULL;
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 	ULONG ulDeviceObjectNumber = 0;
 	PDEVICE_OBJECT *apstDeviceObejctList = NULL;
 	ULONG ulDeiveObjectListSize = 0;

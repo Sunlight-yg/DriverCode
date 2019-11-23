@@ -1,4 +1,3 @@
-#pragma once
 #include "Launch.h"
 
 #ifndef AUXILIARY_H_

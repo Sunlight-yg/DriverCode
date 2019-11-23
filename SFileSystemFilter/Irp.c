@@ -18,69 +18,77 @@ NTSTATUS FSFilterIrpDefault(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 #pragma PAGEDCODE
 NTSTATUS FSFilterIrpCreate(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
-	PDEVICE_EXTENSION pDevExt = NULL;
-	KEVENT event;
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
-	PIO_STACK_LOCATION pIoStack = NULL;
-	PFILE_OBJECT pFile = NULL;
-	POBJECT_NAME_INFORMATION pObjName = NULL;
+
+	PDEVICE_EXTENSION			pDevExt = NULL;
+
+	KEVENT						event;
+
+	NTSTATUS					status = STATUS_SUCCESS;
+
+	PIO_STACK_LOCATION			pIoStack = NULL;
+
+	PFILE_OBJECT				pFile = NULL;
+
+	POBJECT_NAME_INFORMATION	pObjName = NULL;
 
 	PAGED_CODE();
 
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
 	{
 		pstIrp->IoStatus.Information = 0;
+
 		pstIrp->IoStatus.Status = STATUS_INVALID_DEVICE_REQUEST;
+
 		IoCompleteRequest(pstIrp, IO_NO_INCREMENT);
+
 		return STATUS_INVALID_DEVICE_REQUEST;
 	}
 
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 
 	pDevExt = (PDEVICE_EXTENSION)pstDeviceObject->DeviceExtension;
+
 	if (NULL == pDevExt->pstStorageDeviceObject_)
 	{
 		return FSFilterIrpDefault(pstDeviceObject, pstIrp);
 	}
 
 	pIoStack = IoGetCurrentIrpStackLocation(pstIrp);
+
 	pFile = pIoStack->FileObject;
 
 	KeInitializeEvent(&event, NotificationEvent, FALSE);
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 
-	IoSetCompletionRoutine(
-		pstIrp,
-		FSFilterCreateComplete,
-		&event,
-		TRUE,
-		TRUE,
-		TRUE);
+	IoSetCompletionRoutine(pstIrp, FSFilterEventComplete, &event, TRUE, TRUE, TRUE);
 
 	status = IoCallDriver(pDevExt->pstNextDeviceObject_, pstIrp);
+
 	if (STATUS_PENDING == status)
 	{
-		status = KeWaitForSingleObject(&event, 
-									   Executive,
-									   KernelMode,
-									   FALSE,
-									   NULL);
+		status = KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, NULL);
+
 		ASSERT(STATUS_SUCCESS == status);
 	}
 
-	// 以下为Create请求成功后的操作
+	//
+	//		以下为Create请求成功后的操作
+	//
+
 	if (NT_SUCCESS(pstIrp->IoStatus.Status))
 	{
 		if ((pIoStack->Parameters.Create.Options >> 24) == FILE_CREATE)
 		{
-			/*IoQueryFileDosDeviceName(pFile, &pObjName);
+			
+			IoQueryFileDosDeviceName(pFile, &pObjName);
+
 			KdPrint(("文件名: %wZ", pObjName));
-			ExFreePool(pObjName);*/
+
+			ExFreePool(pObjName);
 		}
 	}
 	
-	IoCompleteRequest(pstIrp, IO_NO_INCREMENT);
 	return pstIrp->IoStatus.Status;
 }
 
@@ -150,10 +158,10 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 {
 	PFILE_OBJECT pFile = NULL;
 	POBJECT_NAME_INFORMATION pObjName = NULL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 
-	//PAGED_CODE();
+	PAGED_CODE();
 
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	if (IS_MY_CONTROL_DEVICE_OBJECT(pstDeviceObject))
 	{
 		pstIrp->IoStatus.Information = 0;
@@ -184,7 +192,7 @@ NTSTATUS FSFilterIrpRead(IN PDEVICE_OBJECT pstDeviceObject, IN PIRP pstIrp)
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	IoSetCompletionRoutine(pstIrp,
-						   FSFilterReadComplete,
+						   FSFilterEventComplete,
 						   &waitEvent,
 						   TRUE,
 						   TRUE,
@@ -283,12 +291,13 @@ NTSTATUS FSFilterAttachMountedVolume(
 	IN PDEVICE_OBJECT pstDeviceObject, 
 	IN PIRP pstIrp)
 {
+	NTSTATUS ntStatus = STATUS_SUCCESS;
+
 	PAGED_CODE();
 	UNREFERENCED_PARAMETER(pstDeviceObject);
 
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstFilterDeviceObject));
 
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	ExAcquireFastMutex(&g_stAttachLock);
 
 	do
@@ -420,9 +429,10 @@ NTSTATUS FSFilterMinorIrpMountVolumn(IN PDEVICE_OBJECT pstDeviceObject,
 	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
 	ASSERT(IS_TARGET_DEVICE_TYPE(pstDeviceObject->DeviceType));
 
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 	PIO_STACK_LOCATION pstStackLocation = IoGetCurrentIrpStackLocation(pstIrp);
 	PDEVICE_OBJECT pstFilterDeviceObject = NULL;
+
 	// 创建卷的过滤设备
 	ntStatus = IoCreateDevice(g_pstDriverObject,
 							  sizeof(PDEVICE_EXTENSION),
@@ -478,7 +488,7 @@ NTSTATUS FSFilterMinorIrpMountVolumn(IN PDEVICE_OBJECT pstDeviceObject,
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	IoSetCompletionRoutine(pstIrp,
-						   FSFilterMountDeviceComplete,
+						   FSFilterEventComplete,
 						   &waitEvent,
 						   TRUE,
 						   TRUE,
@@ -523,11 +533,11 @@ NTSTATUS FSFilterMinoIrpLoadFileSystem(IN PDEVICE_OBJECT pstDeviceObject,
 
 	// Set completion routine.
 	IoSetCompletionRoutine(pstIrp,
-		FSFilterLoadFileSystemComplete,
-		&waitEvent,
-		TRUE,
-		TRUE,
-		TRUE);
+						   FSFilterEventComplete,
+						   &waitEvent,
+						   TRUE,
+						   TRUE,
+						   TRUE);
 
 	IoCopyCurrentIrpStackLocationToNext(pstIrp);
 	ntStatus = IoCallDriver(pstDeviceExtension->pstNextDeviceObject_, pstIrp);

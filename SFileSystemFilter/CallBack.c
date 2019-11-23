@@ -39,63 +39,16 @@ VOID FSFilterFsChangeNotify(IN PDEVICE_OBJECT pstDeviceObject,
 }
 
 #pragma PAGEDCODE
-NTSTATUS FSFilterMountDeviceComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
-{
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterReadComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
-{
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterLoadFileSystemComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
-{
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterCreateComplete(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp, IN PVOID pContext)
+NTSTATUS FSFilterEventComplete(
+	IN PDEVICE_OBJECT pDevObj, 
+	IN PIRP pIrp, 
+	IN PVOID pContext
+)
 {
 	UNREFERENCED_PARAMETER(pIrp);
 	UNREFERENCED_PARAMETER(pDevObj);
 
-	//ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pDevObj));
+	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pDevObj));
 	ASSERT(NULL != pContext);
 	
 	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);

@@ -4,7 +4,7 @@
 VOID FSFilterFsChangeNotify(IN PDEVICE_OBJECT pstDeviceObject,
 							IN BOOLEAN bFSActive)
 {
-	PAGED_CODE();
+	
 	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
 	PUNICODE_STRING pustrDeviceObjectName = NULL;
 
@@ -39,80 +39,19 @@ VOID FSFilterFsChangeNotify(IN PDEVICE_OBJECT pstDeviceObject,
 }
 
 #pragma PAGEDCODE
-NTSTATUS FSFilterMountDeviceComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
+NTSTATUS FSFilterEventComplete(
+	IN PDEVICE_OBJECT pDevObj, 
+	IN PIRP pIrp, 
+	IN PVOID pContext
+)
 {
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterReadComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
-{
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterLoadFileSystemComplete(
-	IN PDEVICE_OBJECT pstDeviceObject,
-	IN PIRP pstIrp,
-	IN PVOID pContext)
-{
-	UNREFERENCED_PARAMETER(pstDeviceObject);
-	UNREFERENCED_PARAMETER(pstIrp);
-
-	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pstDeviceObject));
-	ASSERT(NULL != pContext);
-
-	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
-
-	return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-#pragma PAGEDCODE
-NTSTATUS FSFilterCreateComplete(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp, IN PVOID pContext)
-{
-	PIO_STACK_LOCATION pIrpSp;
-	PFILE_OBJECT pFile = NULL;
-
-	if (!IS_MY_FILTER_DEVICE_OBJECT(pDevObj))
-	{
-		return pIrp->IoStatus.Status;
-	}
-
-	pIrpSp = IoGetCurrentIrpStackLocation(pIrp);
-	pFile = pIrpSp->FileObject;
-
+	UNREFERENCED_PARAMETER(pIrp);
 	UNREFERENCED_PARAMETER(pDevObj);
-	UNREFERENCED_PARAMETER(pContext);
 
-	if (NT_SUCCESS(pIrp->IoStatus.Status))
-	{
-		/*if (pFile != NULL && (pIrpSp->Parameters.Create.Options & FILE_DIRECTORY_FILE) != 0)
-		{
-			KdPrint(("一个目录已经打开。"));
-		}*/
-	}
+	ASSERT(IS_MY_FILTER_DEVICE_OBJECT(pDevObj));
+	ASSERT(NULL != pContext);
 
-	return pIrp->IoStatus.Status;
+	KeSetEvent((PKEVENT)pContext, IO_NO_INCREMENT, FALSE);
+
+	return STATUS_MORE_PROCESSING_REQUIRED;
 }

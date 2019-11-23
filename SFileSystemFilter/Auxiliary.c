@@ -5,7 +5,7 @@
 NTSTATUS FSFilterGetObjectName(IN PVOID pObject,
 							   IN OUT PUNICODE_STRING * pustrObjectName)
 {
-	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	NTSTATUS ntStatus = STATUS_SUCCESS;
 	POBJECT_NAME_INFORMATION pstObjectNameInfo = NULL;
 	ULONG ulNameNeedSize = 0;
 
@@ -71,7 +71,7 @@ BOOLEAN FSFilterIsAttachedDevice(IN PDEVICE_OBJECT pstDeviceObject)
 #pragma PAGEDCODE
 BOOLEAN MzfGetFileFullPathPreCreate(IN PFILE_OBJECT pFile, OUT PUNICODE_STRING path)
 {
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	NTSTATUS status = STATUS_SUCCESS;
 	POBJECT_NAME_INFORMATION pObjName = NULL;
 	WCHAR buf[256] = { 0 };
 	PVOID obj_ptr = NULL;

@@ -16,8 +16,8 @@
 #define FAST_IO_DISPATCH_TAG 'FIDT'
 #define OBJECT_NAME_TAG 'ONT'
 
-#define CONTROL_DEVICE_NAME L"\\FileSystem\\Filters\\SFilter"
-#define OLD_CONTROL_DEVICE_NAME L"\\FileSystem\\SFilter"
+#define CONTROL_DEVICE_NAME L"\\FileSystem\\Filters\\SunFilter"
+#define OLD_CONTROL_DEVICE_NAME L"\\FileSystem\\SunFilter"
 #define FILE_SYSTEM_REC_NAME L"\\FileSystem\\Fs_Rec"
 
 // the limit of device name's length.

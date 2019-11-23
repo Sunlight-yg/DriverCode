@@ -35,14 +35,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1EA47CC1-6FCD-4B91-B6EF-0F1EE6888152}</ProjectGuid>
+    <ProjectGuid>{770338AC-EE6B-41D4-9CE8-39A1D09231C8}</ProjectGuid>
     <TemplateGuid>{1bc93793-694f-48fe-9372-81e2b05556fd}</TemplateGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <Configuration>Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
-    <RootNamespace>FSFilterEncry</RootNamespace>
+    <RootNamespace>MiniFilter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>MiniFilter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -67,7 +68,8 @@
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
     <DriverType>KMDF</DriverType>
-    <DriverTargetPlatform>Desktop</DriverTargetPlatform>
+    <DriverTargetPlatform>
+    </DriverTargetPlatform>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <TargetVersion>Windows10</TargetVersion>
@@ -142,31 +144,26 @@
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <WarningLevel>Level3</WarningLevel>
-    </ClCompile>
+    <Link>
+      <AdditionalDependencies>fltMgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <Inf Include="MiniFilter.inf" />
+  </ItemGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Auxiliary.h" />
-    <ClInclude Include="CallBack.h" />
-    <ClInclude Include="FastIo.h" />
-    <ClInclude Include="GlobalVar.h" />
-    <ClInclude Include="Irp.h" />
-    <ClInclude Include="Launch.h" />
-    <ClInclude Include="MacroShare.h" />
-    <ClInclude Include="TypeShare.h" />
+    <ClCompile Include="Auxiliary.c" />
+    <ClCompile Include="GlobalVar.c" />
+    <ClCompile Include="MiniFilter.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Auxiliary.c" />
-    <ClCompile Include="CallBack.c" />
-    <ClCompile Include="FastIo.c" />
-    <ClCompile Include="GlobalVar.c" />
-    <ClCompile Include="Irp.c" />
-    <ClCompile Include="Launch.c" />
+    <ClInclude Include="Auxiliary.h" />
+    <ClInclude Include="GlobalVar.h" />
+    <ClInclude Include="MacroShare.h" />
+    <ClInclude Include="MiniFilter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
