@@ -96,7 +96,9 @@ NTSTATUS
 GetFileInformation(
 	__inout PFLT_CALLBACK_DATA		Data,
 	__in PCFLT_RELATED_OBJECTS		FltObjects,
-	__inout PSTREAM_HANDLE_CONTEXT	pCtx
+	__inout PBOOLEAN				isEncryptFileType,
+	__inout PBOOLEAN				isEncrypted,
+	__inout PFILE_STANDARD_INFORMATION pFileInfo
 )
 {
 	NTSTATUS				 	 status = STATUS_UNSUCCESSFUL;
@@ -105,14 +107,9 @@ GetFileInformation(
 
 	PFLT_FILE_NAME_INFORMATION	 pNameInfo = NULL;
 
-	//FILE_STANDARD_INFORMATION	 FileInfo;
-
 	LONGLONG					 offset = 0;
 
 	CHAR						 buffer[ENCRYPT_MARK_LEN] = { 0 };
-
-	pCtx->isEncrypted = FALSE;
-	pCtx->isEncryptFileType = FALSE;
 
 	PAGED_CODE();
 
@@ -136,20 +133,20 @@ GetFileInformation(
 				FltParseFileNameInformation(pNameInfo);
 
 				//	是否是加密类型
-				pCtx->isEncryptFileType = IsEncryptFileType(&pNameInfo->Extension);
+				*isEncryptFileType = IsEncryptFileType(&pNameInfo->Extension);
 
-				if (pCtx->isEncryptFileType)
+				if (isEncryptFileType)
 				{   
 					//	查询文件信息
 					status = FltQueryInformationFile(FltObjects->Instance,
 													 FltObjects->FileObject,
-													 &pCtx->fileInfo,
+													 pFileInfo,
 													 sizeof(FILE_STANDARD_INFORMATION),
 													 FileStandardInformation,
 													 NULL);
 					if (NT_SUCCESS(status))
 					{
-						offset = pCtx->fileInfo.EndOfFile.QuadPart - ENCRYPT_MARK_STRING_LEN;
+						offset = pFileInfo->EndOfFile.QuadPart - ENCRYPT_MARK_STRING_LEN;
 					
 						//	若文件偏移大于标识大小
 						if (offset >= 0)
@@ -166,7 +163,7 @@ GetFileInformation(
 							{
 								if (strncmp(buffer, ENCRYPT_MARK_STRING, ENCRYPT_MARK_STRING_LEN) == 0)
 								{
-									pCtx->isEncrypted = TRUE;
+									*isEncrypted = TRUE;
 								}
 							}
 						}

@@ -14,10 +14,13 @@ Cc_ClearFileCache(
 	__in ULONG Length
 );
 
-NTSTATUS GetFileInformation(
-	__inout PFLT_CALLBACK_DATA Data,
-	__in PCFLT_RELATED_OBJECTS FltObjects,
-	__inout PSTREAM_HANDLE_CONTEXT ctx
+NTSTATUS
+GetFileInformation(
+	__inout PFLT_CALLBACK_DATA		Data,
+	__in PCFLT_RELATED_OBJECTS		FltObjects,
+	__inout PBOOLEAN				isEncryptFileType,
+	__inout PBOOLEAN				isEncrypted,
+	__inout PFILE_STANDARD_INFORMATION pFileInfo
 );
 
 BOOLEAN IsEncryptFileType(PUNICODE_STRING pType);
