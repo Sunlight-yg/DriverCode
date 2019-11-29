@@ -12,6 +12,7 @@
 #define ENCRYPT_MARK_LEN 4096
 
 #define BUFFER_TAG 'sds'
+#define ENCRYPT_TAG 'cne'
 #define	FLT_CONTEXT_REGISTRATION_TAG 'creg'
 
 #endif

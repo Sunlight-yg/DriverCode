@@ -18,9 +18,7 @@ NTSTATUS
 GetFileInformation(
 	__inout PFLT_CALLBACK_DATA		Data,
 	__in PCFLT_RELATED_OBJECTS		FltObjects,
-	__inout PBOOLEAN				isEncryptFileType,
-	__inout PBOOLEAN				isEncrypted,
-	__inout PFILE_STANDARD_INFORMATION pFileInfo
+	__inout PBOOLEAN				isEncryptFileType
 );
 
 BOOLEAN IsEncryptFileType(PUNICODE_STRING pType);
@@ -33,6 +31,8 @@ EncryptFile(
 	__in PCFLT_RELATED_OBJECTS FltObjects,
 	__in PFILE_STANDARD_INFORMATION	fileInfo
 );
+
+PMDL AllocMemoryMdl(ULONG __in length);
 
 NTSTATUS EncryptData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len);
 

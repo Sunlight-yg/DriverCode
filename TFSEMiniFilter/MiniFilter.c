@@ -82,9 +82,7 @@ SunPostCreate(
 
 	BOOLEAN							isEncryptFileType = FALSE;
 
-	BOOLEAN							isEncrypted = FALSE;
-
-	FILE_STANDARD_INFORMATION		FileInfo = { 0 };
+	PSTREAM_HANDLE_CONTEXT			pCtx = NULL;
 
 	if (KeGetCurrentIrql() >= DISPATCH_LEVEL)
 	{
@@ -94,92 +92,90 @@ SunPostCreate(
 	UNREFERENCED_PARAMETER(Flags);
 	UNREFERENCED_PARAMETER(CompletionContext);
 
-	__try
-	{
-		//	获取进程名
-		procName = GetCurrentProcessName(ProcessNameOffset);
-
-		if (strncmp(procName, SECRET_PROC_NAME, strlen(procName)) == 0)
-		{
-			//	获取文件信息
-			status = GetFileInformation(Data, FltObjects, &isEncryptFileType, &isEncrypted, &FileInfo);
-			if (!NT_SUCCESS(status))
-			{
-				return FLT_POSTOP_FINISHED_PROCESSING;
-			}
-
-			// 不是加密类型跳过
-			if (!isEncryptFileType)
-			{
-				return FLT_POSTOP_FINISHED_PROCESSING;
-			}
-
-			if (!isEncrypted)
-			{
-				status = EncryptFile(Data, FltObjects, &FileInfo);
-				if (NT_SUCCESS(status))
-				{
-					KdPrint(("SunPostCreate: EncryptFile Success."));
-				}
-				else
-				{
-					KdPrint(("SunPostCreate: EncryptFile fail."));
-				}
-			}
-		}
-
-		Cc_ClearFileCache(FltObjects->FileObject, TRUE, NULL, 0);
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
-	{
-		KdPrint(("PostCreate: Exception"));
-	}
-
-	return FLT_POSTOP_FINISHED_PROCESSING;
-}
-
-FLT_PREOP_CALLBACK_STATUS
-SunPreRead(
-	__inout PFLT_CALLBACK_DATA Data,
-	__in PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID *CompletionContext
-)
-{
-	PCHAR								procName = NULL;
-
-	//NTSTATUS							status = STATUS_UNSUCCESSFUL;
-
-	PFLT_IO_PARAMETER_BLOCK				iopb = Data->Iopb;
-
-	UNREFERENCED_PARAMETER(FltObjects);
-	UNREFERENCED_PARAMETER(CompletionContext);
-
-	if (KeGetCurrentIrql() >= DISPATCH_LEVEL)
-	{
-		return FLT_PREOP_SUCCESS_NO_CALLBACK;
-	}
-
 	//	获取进程名
 	procName = GetCurrentProcessName(ProcessNameOffset);
 
 	if (strncmp(procName, SECRET_PROC_NAME, strlen(procName)) == 0)
 	{
-		if (iopb->IrpFlags & (IRP_PAGING_IO | IRP_SYNCHRONOUS_PAGING_IO | IRP_NOCACHE))
+		//	获取文件信息
+		status = GetFileInformation(Data, FltObjects, &isEncryptFileType);
+		if (!NT_SUCCESS(status))
 		{
-			/*iopb->Parameters.Read.ByteOffset.QuadPart += ENCRYPT_MARK_STRING_LEN;
-			FltSetCallbackDataDirty(Data);*/
-			//KdPrint(("SunPreRead: Is encrypt file."));
-			KdPrint(("ByteOffset: %u", iopb->Parameters.Read.ByteOffset.QuadPart));
-			KdPrint(("Length: %u", iopb->Parameters.Read.Length));
-			if (iopb->Parameters.Read.MdlAddress != NULL)
+			return FLT_POSTOP_FINISHED_PROCESSING;
+		}
+
+		// 不是加密类型跳过
+		if (!isEncryptFileType)
+		{
+			return FLT_POSTOP_FINISHED_PROCESSING;
+		}
+
+		status = FltGetStreamContext(FltObjects->Instance, FltObjects->FileObject, &pCtx);
+		//第一次打开文件没有流上下文，需要创建
+		if (!NT_SUCCESS(status))
+		{
+			//获取流上下文地址
+			status = FltAllocateContext(FltObjects->Filter,
+										FLT_STREAM_CONTEXT,
+										sizeof(STREAM_HANDLE_CONTEXT),
+										NonPagedPool, &pCtx);
+			if (!NT_SUCCESS(status))
 			{
-				KdPrint(("SunPreRead: Mdl不为null."));
+				KdPrint(("PostCreate: FltAllocateContext fail.%X", status));
+				return FLT_POSTOP_FINISHED_PROCESSING;
+			}
+
+			pCtx->isEncypted = FALSE;
+
+			//设置文件流句柄上下文
+			status = FltSetStreamContext(FltObjects->Instance, 
+										 FltObjects->FileObject, 
+										 FLT_SET_CONTEXT_KEEP_IF_EXISTS,
+										 pCtx, 
+										 NULL);
+			if (!NT_SUCCESS(status))
+			{
+				KdPrint(("PostCreate: FltSetStreamContext fail.%X", status));
+				return FLT_POSTOP_FINISHED_PROCESSING;
+			}
+
+			//	查询文件信息
+			status = FltQueryInformationFile(FltObjects->Instance,
+											 FltObjects->FileObject,
+											 &pCtx->fileInfo,
+											 sizeof(FILE_STANDARD_INFORMATION),
+											 FileStandardInformation,
+											 NULL);
+			if (!NT_SUCCESS(status))
+			{
+				KdPrint(("PostCreate: FltQueryInformationFile fail.%X", status));
+			}
+
+			KdPrint(("PostCreate: The stream context was set successfully."));
+		}
+		else
+		{
+			FltReleaseContext(pCtx);
+		}
+
+		if (!pCtx->isEncypted)
+		{
+			status = EncryptFile(Data, FltObjects, &pCtx->fileInfo);
+			if (NT_SUCCESS(status))
+			{
+				pCtx->isEncypted = TRUE;
+				KdPrint(("SunPostCreate: EncryptFile Success."));
+			}
+			else
+			{
+				KdPrint(("SunPostCreate: EncryptFile fail.%X", status));
 			}
 		}
 
+		Cc_ClearFileCache(FltObjects->FileObject, TRUE, NULL, 0);
 	}
 
-	return FLT_PREOP_SUCCESS_WITH_CALLBACK;
+	return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
 FLT_POSTOP_CALLBACK_STATUS
@@ -200,7 +196,7 @@ SunPostRead(
 
 	PFLT_IO_PARAMETER_BLOCK				iopb = Data->Iopb;
 
-	FILE_STANDARD_INFORMATION			FileInfo = { 0 };
+	PSTREAM_HANDLE_CONTEXT				pCtx = NULL;
 
 	UNREFERENCED_PARAMETER(FltObjects);
 	UNREFERENCED_PARAMETER(CompletionContext);
@@ -216,43 +212,35 @@ SunPostRead(
 
 	if (strncmp(procName, SECRET_PROC_NAME, strlen(procName)) == 0)
 	{
-		//	获取read缓冲区
-		if (iopb->Parameters.Read.MdlAddress != NULL)
+		status = FltGetStreamContext(FltObjects->Instance, FltObjects->FileObject, &pCtx);
+		if (NT_SUCCESS(status))
 		{
-			readBuffer = MmGetSystemAddressForMdlSafe(iopb->Parameters.Read.MdlAddress,
-				NormalPagePriority);
-			if (readBuffer == NULL)
-			{
-				return FLT_POSTOP_FINISHED_PROCESSING;
-			}
-		}
-		else if (FlagOn(Data->Flags, FLTFL_CALLBACK_DATA_SYSTEM_BUFFER) || FlagOn(Data->Flags, FLTFL_CALLBACK_DATA_FAST_IO_OPERATION))
-		{
-			readBuffer = iopb->Parameters.Read.ReadBuffer;
-		}
+			if (pCtx->isEncypted)
+			{ 
+				//	获取read缓冲区
+				if (iopb->Parameters.Read.MdlAddress != NULL)
+				{
+					readBuffer = MmGetSystemAddressForMdlSafe(iopb->Parameters.Read.MdlAddress,
+															  NormalPagePriority);
+					if (readBuffer == NULL)
+					{
+		 				return FLT_POSTOP_FINISHED_PROCESSING;
+					}
+				}
+				else if (FlagOn(Data->Flags, FLTFL_CALLBACK_DATA_SYSTEM_BUFFER) || FlagOn(Data->Flags, FLTFL_CALLBACK_DATA_FAST_IO_OPERATION))
+				{
+					readBuffer = iopb->Parameters.Read.ReadBuffer;
+				}
 
-		//	若缓冲区有数据则对比加密头，然后解密
-		if (readBuffer != NULL)
-		{
-			status = FltQueryInformationFile(FltObjects->Instance,
-											 FltObjects->FileObject,
-											 &FileInfo,
-											 sizeof(FILE_STANDARD_INFORMATION),
-											 FileStandardInformation,
-											 NULL);
-			if (!NT_SUCCESS(status))
-			{
-				KdPrint(("SunPostRead: FltQueryInformationFile fail"));
-				return FLT_POSTOP_FINISHED_PROCESSING;
+				if (readBuffer != NULL)
+				{
+					readLen = pCtx->fileInfo.EndOfFile.QuadPart;
+					DecodeData(readBuffer, 0, readLen);
+					KdPrint(("EndOfFile: %u", pCtx->fileInfo.EndOfFile.QuadPart));
+				}
 			}
 
-			readLen = FileInfo.EndOfFile.QuadPart;
-
-			if (strncmp((PCHAR)readBuffer, ENCRYPT_MARK_STRING, ENCRYPT_MARK_STRING_LEN) == 0)
-			{
-				DecodeData(readBuffer, ENCRYPT_MARK_STRING_LEN, readLen);
-				KdPrint(("SunPostRead: Decode successfully"));
-			}
+			FltReleaseContext(pCtx);
 		}
 	}
 
@@ -266,9 +254,19 @@ SunPreWrite(
 	_In_opt_ PVOID *CompletionContext
 )
 {
+	PCHAR								procName = NULL;
+
 	UNREFERENCED_PARAMETER(Data);
 	UNREFERENCED_PARAMETER(FltObjects);
 	UNREFERENCED_PARAMETER(CompletionContext);
+
+	procName = GetCurrentProcessName(ProcessNameOffset);
+
+	if (strncmp(procName, SECRET_PROC_NAME, strlen(procName)) == 0)
+	{
+
+
+	}
 
 	return FLT_PREOP_SUCCESS_WITH_CALLBACK;
 }
@@ -283,7 +281,7 @@ SunPostWrite(
 {
 	PCHAR								procName = NULL;
 
-	NTSTATUS							status = STATUS_UNSUCCESSFUL;
+	//NTSTATUS							status = STATUS_UNSUCCESSFUL;
 
 	if (KeGetCurrentIrql() >= DISPATCH_LEVEL)
 	{
@@ -291,6 +289,7 @@ SunPostWrite(
 	}
 
 	UNREFERENCED_PARAMETER(Data);
+	UNREFERENCED_PARAMETER(FltObjects);
 	UNREFERENCED_PARAMETER(CompletionContext);
 	UNREFERENCED_PARAMETER(Flags);
 

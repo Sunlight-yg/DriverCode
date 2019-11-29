@@ -9,9 +9,7 @@ GetProcessNameOffset()
 	curproc = PsGetCurrentProcess();
 
 	for (i = 0; i < 3 * PAGE_SIZE; i++) {
-
 		if (!strncmp("System", (PCHAR)curproc + i, strlen("System"))) {
-
 			return i;
 		}
 	}
@@ -96,9 +94,7 @@ NTSTATUS
 GetFileInformation(
 	__inout PFLT_CALLBACK_DATA		Data,
 	__in PCFLT_RELATED_OBJECTS		FltObjects,
-	__inout PBOOLEAN				isEncryptFileType,
-	__inout PBOOLEAN				isEncrypted,
-	__inout PFILE_STANDARD_INFORMATION pFileInfo
+	__inout PBOOLEAN				isEncryptFileType
 )
 {
 	NTSTATUS				 	 status = STATUS_UNSUCCESSFUL;
@@ -106,10 +102,6 @@ GetFileInformation(
 	BOOLEAN						 isDir = FALSE;
 
 	PFLT_FILE_NAME_INFORMATION	 pNameInfo = NULL;
-
-	LONGLONG					 offset = 0;
-
-	CHAR						 buffer[ENCRYPT_MARK_LEN] = { 0 };
 
 	PAGED_CODE();
 
@@ -120,7 +112,7 @@ GetFileInformation(
 	{
 		if (isDir)
 		{
-			return status;
+			return STATUS_UNSUCCESSFUL;
 		}
 		else
 		{
@@ -134,54 +126,16 @@ GetFileInformation(
 
 				//	是否是加密类型
 				*isEncryptFileType = IsEncryptFileType(&pNameInfo->Extension);
-
-				if (isEncryptFileType)
-				{   
-					//	查询文件信息
-					status = FltQueryInformationFile(FltObjects->Instance,
-													 FltObjects->FileObject,
-													 pFileInfo,
-													 sizeof(FILE_STANDARD_INFORMATION),
-													 FileStandardInformation,
-													 NULL);
-					if (NT_SUCCESS(status))
-					{
-						offset = pFileInfo->EndOfFile.QuadPart - ENCRYPT_MARK_STRING_LEN;
-					
-						//	若文件偏移大于标识大小
-						if (offset >= 0)
-						{
-							status = FltReadFile(FltObjects->Instance,
-												 FltObjects->FileObject,
-												 0, // 从头开始读取标识
-												 ENCRYPT_MARK_LEN,
-												 (PVOID)buffer,
-												 //	不更新读取偏移 | 非缓冲读取
-												 FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET | FLTFL_IO_OPERATION_NON_CACHED,
-												 NULL, NULL, NULL);
-							if (NT_SUCCESS(status))
-							{
-								if (strncmp(buffer, ENCRYPT_MARK_STRING, ENCRYPT_MARK_STRING_LEN) == 0)
-								{
-									*isEncrypted = TRUE;
-								}
-							}
-						}
-					}
-				}
-				/*else
-				{
-					KdPrint(("pNameInfo->Extension: %wZ", pNameInfo->Extension));
-				}*/
+				FltReleaseFileNameInformation(pNameInfo);
 			}
 			else
 			{
-				KdPrint(("FltGetFileNameInformation fail."));
+				KdPrint(("FltGetFileNameInformation fail.%X", status));
 			}
 		}
 	}
 
-	return status;
+	return STATUS_SUCCESS;
 }
 
 BOOLEAN 
@@ -235,55 +189,47 @@ EncryptFile(
 
 	LARGE_INTEGER				offset = { 0 };
 
-	LARGE_INTEGER				offsetAddEncStrLen = { 0 };
-
 	PVOID						buffer = NULL;
 
 	PMDL						pMdl = NULL;
 
 	PAGED_CODE();
-
 	UNREFERENCED_PARAMETER(Data);
 
-
-	EndOfFile = fileInfo->EndOfFile.QuadPart;
-
-	buffer = ExAllocatePoolWithTag(NonPagedPool,
-								   ENCRYPT_MARK_LEN,
-								   BUFFER_TAG);
-	if (buffer == NULL)
-	{
-		KdPrint(("EncryptFile: ExAllocatePoolWithTag fail."));
-		return status;
-	}
-
-	pMdl = IoAllocateMdl(buffer,
-						 ENCRYPT_MARK_LEN,
-						 FALSE, FALSE, NULL);
+	pMdl = AllocMemoryMdl(ENCRYPT_MARK_LEN);
 	if (pMdl == NULL)
 	{
-		KdPrint(("EncryptFile: IoAllocateMdl fail."));
-		ExFreePool(buffer);
-		return status;
+		return STATUS_UNSUCCESSFUL;
 	}
 
-	MmBuildMdlForNonPagedPool(pMdl);
-
-	RtlZeroMemory(buffer, ENCRYPT_MARK_LEN);
+	buffer = MmGetSystemAddressForMdlSafe(pMdl, NormalPagePriority);
+	EndOfFile = fileInfo->EndOfFile.QuadPart;
 
 	while (offset.QuadPart < EndOfFile)
 	{
+		RtlZeroMemory(buffer, ENCRYPT_MARK_LEN);
+
+		//	若文件大小 - 文件读取偏移 >= 4k，则设读取长度为4k
+		if (EndOfFile - offset.QuadPart >= ENCRYPT_MARK_LEN)
+		{
+			readLen = ENCRYPT_MARK_LEN;
+		}
+		else
+		{
+			readLen = (ULONG)(EndOfFile - offset.QuadPart);
+		}
+
 		//	读取文件数据到缓冲区
 		status = FltReadFile(FltObjects->Instance,
 							 FltObjects->FileObject,
 							 &offset,
-							 ENCRYPT_MARK_LEN,
+							 readLen,
 							 buffer,
 							 FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET | FLTFL_IO_OPERATION_NON_CACHED,
 							 &readLen, NULL, NULL);
 		if (!NT_SUCCESS(status))
 		{
-			KdPrint(("EncryptFile: FltReadFile fail."));
+			KdPrint(("EncryptFile: FltReadFile fail.%X", status));
 			goto free;
 		}
 
@@ -294,16 +240,13 @@ EncryptFile(
 			goto free;
 		}
 
-		//	将文件内容写入到加密头之后
-		offsetAddEncStrLen.QuadPart = offset.QuadPart + ENCRYPT_MARK_STRING_LEN;
-
 		//	写入加密内容至文件
 		status = FltWriteFile(FltObjects->Instance,
 							  FltObjects->FileObject,
-							  &offsetAddEncStrLen,
+							  &offset,
 							  readLen,
 							  buffer,
-							  FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET | FLTFL_IO_OPERATION_NON_CACHED,
+							  FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET,
 							  &writeLen, NULL, NULL);
 		if (readLen != writeLen)
 		{
@@ -312,46 +255,53 @@ EncryptFile(
 
 		if (!NT_SUCCESS(status))
 		{
-			KdPrint(("EncryptFile: FltWriteFile fail."));
+			KdPrint(("EncryptFile: FltWriteFile fail.%X", status));
 			goto free;
 		}
 
 		offset.QuadPart += readLen;
-		offsetAddEncStrLen.QuadPart = offset.QuadPart + ENCRYPT_MARK_STRING_LEN;
 	}
-
-	RtlCopyMemory(buffer, ENCRYPT_MARK_STRING, ENCRYPT_MARK_STRING_LEN);
-
-	// 写入加密头
-	status = FltWriteFile(FltObjects->Instance,
-						  FltObjects->FileObject,
-						  0,
-						  (ULONG)ENCRYPT_MARK_STRING_LEN,
-						  buffer,
-						  FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET | FLTFL_IO_OPERATION_NON_CACHED,
-						  &writeLen, NULL, NULL);
-	if (!NT_SUCCESS(status))
-	{
-		KdPrint(("EncryptFile: Flags write fail."));
-		goto free;
-	}
-
-	KdPrint(("EncryptFile: Flags write successful."));
-
 
 free:
-	
+
 	if (buffer != NULL)
 	{
 		ExFreePool(buffer);
 	}
-
 	if (pMdl != NULL)
 	{
 		IoFreeMdl(pMdl);
 	}
 
 	return status;
+}
+
+PMDL AllocMemoryMdl(ULONG __in length)
+{
+	PVOID				buffer = NULL;
+
+	PMDL				pMdl = NULL;
+
+	buffer = ExAllocatePoolWithTag(NonPagedPool,
+								   length,
+								   BUFFER_TAG);
+	if (buffer != NULL)
+	{
+		pMdl = IoAllocateMdl(buffer,
+							 length,
+							 FALSE, FALSE, NULL);
+		if (pMdl == NULL)
+		{
+			KdPrint(("AllocMemoryMdl: IoAllocateMdl fail."));
+			ExFreePool(buffer);
+			return NULL;
+		}
+
+		MmBuildMdlForNonPagedPool(pMdl);
+		return pMdl;
+	}
+
+	return NULL;
 }
 
 NTSTATUS EncryptData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len)
@@ -361,7 +311,7 @@ NTSTATUS EncryptData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len)
 	__try {
 		for (ULONG i = offset; i < len; i++)
 		{
-			pChar[i] ^= 77;
+			pChar[i] ^= 7;
 		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
@@ -380,7 +330,7 @@ NTSTATUS DecodeData(__inout PVOID pBuffer, __in ULONG offset, __in LONGLONG len)
 	__try {
 		for (ULONG i = offset; i < len; i++)
 		{
-			pChar[i] ^= 77;
+			pChar[i] ^= 7;
 		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)

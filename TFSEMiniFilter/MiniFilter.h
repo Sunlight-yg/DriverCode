@@ -28,13 +28,6 @@ SunPostRead(
 	_In_ FLT_POST_OPERATION_FLAGS Flags
 );
 
-FLT_PREOP_CALLBACK_STATUS 
-SunPreRead(
-	__inout PFLT_CALLBACK_DATA Data,
-	__in PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID *CompletionContext
-);
-
 FLT_PREOP_CALLBACK_STATUS
 SunPreWrite(
 	__inout PFLT_CALLBACK_DATA Data,
