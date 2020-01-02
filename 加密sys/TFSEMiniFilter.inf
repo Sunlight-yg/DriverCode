@@ -1,0 +1,109 @@
+;
+; TFSEMiniFilter.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=STFSEMiniFilter ; TODO: edit Class 
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName% 
+CatalogFile=TFSEMiniFilter.cat
+DriverVer = 12/07/2019,10.52.42.1
+
+[DestinationDirs]
+DefaultDestDir = 12
+TFSEMiniFilter_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+TFSEMiniFilter.sys  = 1,,
+WdfCoInstaller01009.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTamd64
+
+[Standard.NTamd64]
+%TFSEMiniFilter.DeviceDesc%=TFSEMiniFilter_Device, Root\TFSEMiniFilter ; TODO: edit hw-id
+
+[TFSEMiniFilter_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+TFSEMiniFilter.sys
+
+;-------------- Service installation
+[TFSEMiniFilter_Device.NT.Services]
+AddService = TFSEMiniFilter,%SPSVCINST_ASSOCSERVICE%, TFSEMiniFilter_Service_Inst
+
+; -------------- TFSEMiniFilter driver install sections
+[TFSEMiniFilter_Service_Inst]
+DisplayName    = %TFSEMiniFilter.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\TFSEMiniFilter.sys
+AddReg		   = TFSEMiniFilter_Device_DefaultInstall_AddReg	; 添加注册表项
+
+; FltRegisterFilter函数返回STATUS_OBJECT_NAME_NOT_FOUND. #define STATUS_OBJECT_NAME_NOT_FOUND     ((NTSTATUS)0xC0000034L)
+; 原因是注册表中没有如下内容:
+;[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\xxxxxx\Instances]
+;"DefaultInstance"="xxxxxx"
+;[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\xxxxxx\Instances\xxxxxx]
+;"Altitude"="371100"
+;"Flags"=dword:00000000
+;并注意:Altitude的值和注册时要一致.
+;说明:必须有一个名为"Instances"的子项用于存放驱动的实例信息，该子项下面的字符串值"DefaultInstance"指定了默认实例的名称。
+;"Instances"项下面的每一个子项表示一个实例，每个实例子项必须有一个字符串值"Altitude"。
+;FltRegisterFilter函数执行时，如果在注册表中没有找到默认实例的"Altitude"值，将会返回STATUS_OBJECT_NAME_NOT_FOUND错误。
+[TFSEMiniFilter_Device_DefaultInstall_AddReg]
+HKR,,"DebugFlags",0x00010001 ,0x0
+HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
+HKR,"Instances\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%
+HKR,"Instances\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%
+
+;
+;--- TFSEMiniFilter_Device Coinstaller installation ------
+;
+
+[TFSEMiniFilter_Device.NT.CoInstallers]
+AddReg=TFSEMiniFilter_Device_CoInstaller_AddReg
+CopyFiles=TFSEMiniFilter_Device_CoInstaller_CopyFiles
+
+[TFSEMiniFilter_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01009.dll,WdfCoInstaller"
+
+[TFSEMiniFilter_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01009.dll
+
+[TFSEMiniFilter_Device.NT.Wdf]
+KmdfService =  TFSEMiniFilter, TFSEMiniFilter_wdfsect
+[TFSEMiniFilter_wdfsect]
+KmdfLibraryVersion = 1.9
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Sunlight" ;TODO: Replace with your manufacturer name 制造商
+ClassName="STFSEMiniFilter" ; TODO: edit ClassName 设备类型 管理里显示的
+DiskName = "STFSEMiniFilter Installation Disk"
+TFSEMiniFilter.DeviceDesc = "STFSEMiniFilter Device" ;设备名 管理里显示的
+TFSEMiniFilter.SVCDESC = "STFSEMiniFilter Service" ; 
+
+DefaultInstance         = "SunTFSEMiniFilter"
+Instance1.Name          = "SunTFSEMiniFilter"
+Instance1.Altitude      = "370030"
+Instance1.Flags         =  0x0              ; Allow all attachments

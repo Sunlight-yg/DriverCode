@@ -36,7 +36,7 @@ PMDL AllocMemoryMdl(ULONG __in length);
 
 NTSTATUS EncryptData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len);
 
-NTSTATUS DecodeData(__inout PVOID pBuffer, __in ULONG offset, __in LONGLONG len);
+NTSTATUS DecodeData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len);
 
 
 #endif

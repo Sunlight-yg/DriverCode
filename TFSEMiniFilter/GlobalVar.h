@@ -12,7 +12,7 @@ typedef struct _STREAM_HANDLE_CONTEXT
 {
 	FILE_STANDARD_INFORMATION	fileInfo;//文件信息
 
-	INT							isEncypted;//是否已经加密
+	BOOLEAN						isEncrypted;//是否已经加密
 
 } STREAM_HANDLE_CONTEXT, *PSTREAM_HANDLE_CONTEXT;
 

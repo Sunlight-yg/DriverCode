@@ -174,9 +174,9 @@ GetCurrentProcessName(ULONG Offset)
 
 NTSTATUS 
 EncryptFile(
-	__inout PFLT_CALLBACK_DATA Data,
-	__in PCFLT_RELATED_OBJECTS FltObjects,
-	__in PFILE_STANDARD_INFORMATION	fileInfo
+	__inout PFLT_CALLBACK_DATA			Data,
+	__in PCFLT_RELATED_OBJECTS			FltObjects,
+	__in PFILE_STANDARD_INFORMATION		fileInfo
 )
 {
 	NTSTATUS					status = STATUS_UNSUCCESSFUL;
@@ -204,26 +204,15 @@ EncryptFile(
 
 	buffer = MmGetSystemAddressForMdlSafe(pMdl, NormalPagePriority);
 	EndOfFile = fileInfo->EndOfFile.QuadPart;
+	RtlZeroMemory(buffer, ENCRYPT_MARK_LEN);
 
 	while (offset.QuadPart < EndOfFile)
 	{
-		RtlZeroMemory(buffer, ENCRYPT_MARK_LEN);
-
-		//	若文件大小 - 文件读取偏移 >= 4k，则设读取长度为4k
-		if (EndOfFile - offset.QuadPart >= ENCRYPT_MARK_LEN)
-		{
-			readLen = ENCRYPT_MARK_LEN;
-		}
-		else
-		{
-			readLen = (ULONG)(EndOfFile - offset.QuadPart);
-		}
-
 		//	读取文件数据到缓冲区
 		status = FltReadFile(FltObjects->Instance,
 							 FltObjects->FileObject,
 							 &offset,
-							 readLen,
+							 ENCRYPT_MARK_LEN,
 							 buffer,
 							 FLTFL_IO_OPERATION_DO_NOT_UPDATE_BYTE_OFFSET | FLTFL_IO_OPERATION_NON_CACHED,
 							 &readLen, NULL, NULL);
@@ -323,7 +312,7 @@ NTSTATUS EncryptData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len)
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS DecodeData(__inout PVOID pBuffer, __in ULONG offset, __in LONGLONG len)
+NTSTATUS DecodeData(__inout PVOID pBuffer, __in ULONG offset, __in ULONG len)
 {
 	PCHAR				pChar = (PCHAR)pBuffer;
 
