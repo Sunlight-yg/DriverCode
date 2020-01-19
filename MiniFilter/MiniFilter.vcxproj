@@ -155,12 +155,10 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Auxiliary.c" />
     <ClCompile Include="GlobalVar.c" />
     <ClCompile Include="MiniFilter.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Auxiliary.h" />
     <ClInclude Include="GlobalVar.h" />
     <ClInclude Include="MacroShare.h" />
     <ClInclude Include="MiniFilter.h" />

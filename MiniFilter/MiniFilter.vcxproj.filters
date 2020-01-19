@@ -30,9 +30,6 @@
     <ClCompile Include="MiniFilter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Auxiliary.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MacroShare.h">
@@ -42,9 +39,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MiniFilter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Auxiliary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
