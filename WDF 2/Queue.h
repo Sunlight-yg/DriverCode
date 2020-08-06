@@ -1,8 +1,0 @@
-#pragma once
-
-NTSTATUS WdfIoQueueInitialize(
-	WDFDEVICE Device
-);
-EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL EvtWdfIoQueueIoDeviceControl;
-EVT_WDF_TIMER EvtWdfTimer;
-EVT_WDF_IO_QUEUE_IO_CANCELED_ON_QUEUE EvtWdfIoQueueIoCanceledOnQueue;
