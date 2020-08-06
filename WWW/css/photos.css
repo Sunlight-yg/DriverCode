@@ -1,0 +1,119 @@
+.nav ul li:first-child {
+    background: none;
+}
+
+.top .nav ul .photos {
+	background: rgba(247, 87, 51, 1);
+}
+
+.sub {
+	height: 30px;
+	line-height: 30px;
+	width: 70px;
+	border: none;
+	border-radius: 5px;
+	margin: 0 0 20px;
+	color: white;
+	font-size: 18px;
+	outline: none;
+	background-color: rgba(253, 100, 64, 1);
+	cursor: pointer;
+}
+
+.sub:hover {
+	background-color: rgba(253, 100, 64, 0.8);
+}
+
+.content .imgs {
+	text-align: left;
+	width: 900px;
+	margin: 20px auto 40px;
+}
+
+.content .imgs .div {
+	margin-left: 25px;
+}
+
+.content .imgs .div .imgDiv {
+	position: relative;
+	display: inline-block;
+	margin-top: 10px;
+}
+
+.content .imgs .div .imgDiv .img {
+	position: relative;
+	display: inline-block;
+	margin-right: 10px;
+	width: 200px;
+	height: 200px;
+}
+
+.content .imgs .div .imgDiv .func {
+	position: absolute;
+	left: 28px;
+	bottom: 5px;
+	display: none;
+}
+
+button {
+    color: #444444;
+    background: #F3F3F3;
+    border: 1px #DADADA solid;
+    padding: 5px 10px;
+    border-radius: 2px;
+    font-weight: bold;
+    font-size: 9pt;
+    outline: none;
+}
+
+button:hover {
+    border: 1px #C6C6C6 solid;
+    box-shadow: 1px 1px 1px #EAEAEA;
+    color: #333333;
+    background: #F7F7F7;
+    cursor: pointer;
+}
+
+button:active {
+    box-shadow: inset 1px 1px 1px #DFDFDF;   
+}
+
+button.blue {
+    color: white;
+    background: #4C8FFB;
+    border: 1px #3079ED solid;
+    box-shadow: inset 0 1px 0 #80B0FB;
+}
+
+button.blue:hover {
+    border: 1px #2F5BB7 solid;
+    box-shadow: 0 1px 1px #EAEAEA, inset 0 1px 0 #5A94F1;
+    background: #3F83F1;
+}
+
+button.blue:active {
+    box-shadow: inset 0 2px 5px #2370FE;   
+}
+
+button.red {
+    background: -webkit-linear-gradient(top, #DD4B39, #D14836); 
+    background: -moz-linear-gradient(top, #DD4B39, #D14836); 
+    background: -ms-linear-gradient(top, #DD4B39, #D14836); 
+    border: 1px solid #DD4B39;
+    color: white;
+    text-shadow: 0 1px 0 #C04131;
+}
+
+button.red:hover {
+     background: -webkit-linear-gradient(top, #DD4B39, #C53727);
+     background: -moz-linear-gradient(top, #DD4B39, #C53727);
+     background: -ms-linear-gradient(top, #DD4B39, #C53727);
+     border: 1px solid #AF301F;
+}
+
+button.red:active {
+     box-shadow: inset 0 1px 1px rgba(0,0,0,0.2);
+    background: -webkit-linear-gradient(top, #D74736, #AD2719);
+    background: -moz-linear-gradient(top, #D74736, #AD2719);
+    background: -ms-linear-gradient(top, #D74736, #AD2719);
+}

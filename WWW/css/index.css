@@ -1,0 +1,114 @@
+﻿html { 
+    overflow-y: scroll;
+}
+body {
+    background: #eee;
+    margin: 0;
+}
+
+.top {
+    margin-top: 30px;
+}
+
+    .top .outNick {
+        width: 1000px;
+        margin: 0 auto;
+    }
+
+        .top .outNick .nick {
+            font-size: 35px;
+            color: #444;
+        }
+
+.outNav {
+    background: rgba(253,100,64,1);
+}
+
+.nav {
+    height: 40px;
+    width: 1100px;
+    margin: 0 auto;
+}
+
+    .nav ul {
+        text-align: center;
+        list-style: none;
+        line-height: 40px;
+    }
+
+        .nav ul li {
+            float: left;
+            height: 40px;
+            margin: 0 55px;
+            overflow: hidden;
+        }
+
+            .nav ul li:hover {
+                background: rgba(247,87,51,1);
+            }
+
+            .nav ul li:first-child {
+                background: rgba(247,87,51,1);
+            }
+
+        .nav ul .about {
+            margin-right: 30px;
+        }
+
+        .nav ul .exit {
+            margin: 0;
+            margin-left: 30px;
+        }
+
+            .nav ul .exit:hover {
+                background-color: #ed3131;
+            }
+
+        .nav ul li a {
+            display: inline-block;
+            padding: 0 20px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav ul .icon {
+            margin: 0px;
+        }
+
+.content {
+    position: relative;
+    width: 1000px;
+    margin: 15px auto;
+    background-color: white;
+    border-radius: 7px;
+    border: 1px solid #aaa;
+    text-align: center;
+    color: #444;
+}
+
+    .content .h {
+        position: relative;
+        left: -2%;
+    }
+
+    .content .mi {
+        border-radius:  10px;
+    }
+
+    .content .main {
+        text-align: left;
+        margin: 10px 45px;
+        text-indent: 5%;
+        font-size: 18px;
+    }
+
+    .content .main .img {
+        display: block;
+        width: 700px;
+        margin: 30px auto;
+    }
+
+    .content .main .footp {
+        margin: 40px 0;
+        text-align: right;
+    }

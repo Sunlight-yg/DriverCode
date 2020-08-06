@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="context-type" context="text/html" charset="utf-8" />
+		<title>阳光</title>
+		<link rel="shortcut icon" href="img/sunlight.png" />
+		<link rel="stylesheet" type="text/css" href="css/login.css" />
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	</head>
+
+	<body>
+		<div class="imp">
+			<a href="index.php" style="position: absolute; top: 40px; left: 50px; color: #666; text-decoration: none; font-size: 26px;" >首页</a>
+			<img src="img/sunlight.png" width="80" />
+			<div class="title">账号注册</div>
+			<form action="php/register.php" method="post" onsubmit="return validate()" >
+				<input class="in" type="text" name="username" placeholder="请输入账号" required autofocus /><br />
+				<input class="in" type="password" name="passwd" placeholder="请输入密码" required /><br />
+				<input class="in" type="password" name="passwd2" placeholder="请再输入密码" required /><br />
+				<div style="position: relative; width: 350px; margin: 0 auto;">
+					<input id='qrcode' class="in" style="width: 250px; position: relative; left: -50px;" placeholder="请输入验证码" required />
+					<div id="verificationCode"  >
+						<canvas width="100" height="40" id="verifyCanvas"></canvas>
+						<img id="code_img" style="position: absolute; top: -30px; right: -20px; width: 100px; height: 40px;" >
+					</div>
+					<a style="
+            		position: absolute; 
+            		width: 50px; 
+            		top: 22px; 
+            		right: -80px; 
+            		color: #777; 
+            		cursor: pointer;
+            		" onclick="resetCode()">看不清</a>
+				</div>
+				<input class="smt" type="submit" value="注册" onclick="isOK()" /><br />
+			</form>
+			<a class="register" href="login.html">立即登陆</a>
+		</div>
+		<script>
+			var str = '';
+			var captcha = "";
+			var ok = false;
+			var nums = ["2", "3", "4", "5", "6", "7", "8", "9",
+				'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+				'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+			];
+			var verVal = drawCode();
+			function changeQRcode() {
+				document.getElementById("qrcode").src = "qrcode.php?" + Math.random();
+			}
+			function drawCode(str) {
+				var canvas = document.getElementById("verifyCanvas"); //获取HTML端画布
+				var context = canvas.getContext("2d"); //获取画布2D上下文
+				context.fillStyle = "cornflowerblue"; //画布填充色
+				context.fillRect(0, 0, canvas.width, canvas.height); //清空画布
+				context.fillStyle = "white"; //设置字体颜色
+				context.font = "25px Arial"; //设置字体
+				var rand = new Array();
+				var x = new Array();
+				var y = new Array();
+				for(var i = 0; i < 4; i++) {
+					rand.push(rand[i]);
+					rand[i] = nums[Math.floor(Math.random() * nums.length)]
+					x[i] = i * 20 + 10;
+					y[i] = Math.random() * 20 + 20;
+					context.fillText(rand[i], x[i], y[i]);
+				}
+				captcha = rand.join("");
+				str = rand.join('').toUpperCase();
+				//画3条随机线
+				for(var i = 0; i < 2; i++) {
+					drawline(canvas, context);
+				}
+
+				// 画30个随机点
+				for(var i = 0; i < 50; i++) {
+					drawDot(canvas, context);
+				}
+				convertCanvasToImage(canvas);
+				return str;
+			}
+
+			// 随机线
+			function drawline(canvas, context) {
+				context.moveTo(Math.floor(Math.random() * canvas.width), Math.floor(Math.random() * canvas.height)); //随机线的起点x坐标是画布x坐标0位置，y坐标是画布高度的随机数
+				context.lineTo(Math.floor(Math.random() * canvas.width), Math.floor(Math.random() * canvas.height)); //随机线的终点x坐标是画布宽度，y坐标是画布高度的随机数
+				context.lineWidth = 0.5; //随机线宽
+				context.strokeStyle = 'rgba(50,50,50,0.3)'; //随机线描边属性
+				context.stroke(); //描边，即起点描到终点
+			}
+			// 随机点(所谓画点其实就是画1px像素的线，方法不再赘述)
+			function drawDot(canvas, context) {
+				var px = Math.floor(Math.random() * canvas.width);
+				var py = Math.floor(Math.random() * canvas.height);
+				context.moveTo(px, py);
+				context.lineTo(px + 1, py + 1);
+				context.lineWidth = 0.2;
+				context.stroke();
+
+			}
+			// 绘制图片
+			function convertCanvasToImage(canvas) {
+				document.getElementById("verifyCanvas").style.display = "none";
+				var image = document.getElementById("code_img");
+				image.src = canvas.toDataURL("image/png");
+				return image;
+			}
+
+			function resetCode() {
+				$('#verifyCanvas').remove();
+				$('#code_img').before('<canvas width="100" height="40" id="verifyCanvas"></canvas>')
+				verVal = drawCode();
+			}
+			
+			function isOK() {
+				var qrcode = document.getElementById('qrcode');
+				if(captcha.toUpperCase() != qrcode.value.toUpperCase())
+				{
+					alert('验证码错误!');
+					ok = false;
+				}else
+					ok = true;
+			}
+			
+			function validate() {
+				if(ok == false) 
+					return false;
+				return true;
+			}
+		</script>
+	</body>
+
+</html>

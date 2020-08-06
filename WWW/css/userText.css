@@ -1,0 +1,43 @@
+﻿.top .nav ul li:first-child {
+    background: none;
+}
+
+    .top .nav ul li:first-child:hover {
+        background: rgba(247,87,51,1);
+    }
+
+.content .change {
+    position: absolute;
+    top: 6.5%;
+    left: 54%;
+    background-color: rgba(245,43,43,1);
+    border: none;
+    border-radius: 10px;
+    width: 70px;
+    height: 25px;
+    color: white;
+}
+
+    .content .change:focus {
+        outline: none;
+    }
+
+    .content .change:hover {
+        cursor: pointer;
+        background-color: rgba(245,43,43,0.85);
+    }
+
+.content .data {
+    position: relative;
+    left: 8%;
+    width: 400px;
+    text-align: left;
+    margin: 40px auto;
+    font-size: 20px;
+}
+
+    .content .data .signature {
+        position: relative;
+        left: -35%;
+        text-align: center;
+    }

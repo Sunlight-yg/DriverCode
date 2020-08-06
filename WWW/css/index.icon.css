@@ -1,0 +1,19 @@
+﻿.nav ul .icon {
+    position: relative;
+    height: 35px;
+    left: 15px;
+    top: 1px;
+    margin: 0px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    overflow: hidden;
+}
+
+    .nav ul .icon:hover {
+        border: 2px solid #9c4df6;
+        background-color: rgba(250,159,0,0);
+    }
+
+    .nav ul .icon a {
+        padding: 0;
+    }

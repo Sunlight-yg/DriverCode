@@ -1,0 +1,83 @@
+﻿html {
+    background-color: #eee;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+}
+
+.imp {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 600px;
+    background-color: white;
+    text-align: center;
+}
+
+    .imp img {
+        margin: 40px 0 20px;
+    }
+
+    .imp .title {
+        margin: 0 0 30px;
+        font-size: 35px;
+        color: #444;
+    }
+
+    .imp .in {
+        padding-left: 15px;
+        font-size: 18px;
+        height: 40px;
+        width: 350px;
+        margin: 7px 0;
+    }
+
+        .imp .in:focus {
+            outline: rgba(253,100,64,1) solid 2px;
+        }
+
+    .imp .smt {
+        height: 45px;
+        width: 370px;
+        border: none;
+        margin: 20px 0 10px;
+        color: white;
+        font-size: 18px;
+        outline: none;
+        background-color: rgba(253,100,64,1);
+    }
+
+        .imp .smt:hover {
+            cursor: pointer;
+        }
+
+    .imp .register {
+        font-size: 18px;
+        color: #777;
+        text-decoration: none;
+    }
+
+        .imp .register:hover {
+            color: rgba(253,100,64,1)
+        }
+.verificationCode {
+	width: 4rem;
+	height: 100%;
+}
+
+canvas {
+	width: 100%;
+	height: 100%;
+}
+
+#code_img {
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+	vertical-align: top;
+}

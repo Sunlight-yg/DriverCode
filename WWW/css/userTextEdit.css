@@ -1,0 +1,52 @@
+﻿.content .data .in {
+    font-size: 18px;
+    height: 20px;
+    padding-left: 6px;
+    outline: none;
+}
+
+    .content .data .in:focus {
+        padding: 2px 1px 2px 7px;
+        border: 1px solid rgba(253,100,64,1);
+    }
+
+.content .data .signature .signatureIn {
+    height: 100px;
+    width: 400px;
+    outline: none;
+    resize: none;
+    word-break: break-all;
+    font-size: 18px;
+}
+
+    .content .data .signature .signatureIn:focus {
+        border: 1px solid rgba(253,100,64,1);
+    }
+
+.content .data .mit {
+    position: relative;
+    left: -7%;
+    border: none;
+    height: 30px;
+    width: 80px;
+    color: white;
+    border-radius: 10px;
+    background: rgba(253,100,64,1);
+}
+
+    .content .data .mit:focus {
+        outline: none;
+    }
+
+    .content .data .mit:hover {
+        background: rgba(247,87,51,1);
+        cursor: pointer;
+    }
+
+.content .data #cancel {
+    background-color: rgba(245,43,43,1);
+}
+
+    .content .data #cancel:hover {
+        background-color: rgba(245,43,43,0.9);
+    }
